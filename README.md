@@ -15,4 +15,4 @@ Then run the server: server.tcl (default port is 8707)
 
 Clients are in the 'bin' directory, and are generated using TCL Kit.
 
-<img>imgs/demo.png</img>
+![](imgs/demo.png?raw=true)
