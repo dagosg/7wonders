@@ -840,12 +840,7 @@ proc CheckConnectivity {} {
 
   foreach player $game_state(player_list) {
     set tls_socket [lindex $player 2]
-    set cmd "BOARD_Test"
-    if { [catch { puts $tls_socket "$cmd" }] } {
-      Disconnect $tls_socket
-      CheckConnectivity
-      return
-    }
+    if { [eof $tls_socket] } { Disconnect $tls_socket }
   }
 }
 
@@ -927,16 +922,15 @@ proc Disconnect {{sock ""}} {
   upvar 1 state state
 
   # Get socket to disconnect
+  puts stderr "> Disconnecting..."
   if { $sock == "" } {
     set sock $state(socket)
+  } else {
+    puts $sock "BOARD_Exit"
   }
-
-  # Send message
-  catch { puts $sock "BOARD_Exit" }
 
   # Remove player
   set reset 0
-  set i 0
   set player_list {}
   foreach player $game_state(player_list) {
     if { [lindex $player 2] != $sock } {
@@ -950,22 +944,20 @@ proc Disconnect {{sock ""}} {
         set game_state(player_second) ""
       }
     }
-    incr i
   }
   set game_state(player_list) $player_list
-
-  # If nobody there, start a new game
-  if { [llength $player_list] == 0 } {
-    NewGame
-  }
 
   # Close socket
   slaveServer::closeSocket $sock
 
-  # Update game state
-  UpdateGameState
-
-  return "Closed"
+  # If nobody there, start a new game and do nothing
+  if { [llength $player_list] == 0 } {
+    NewGame
+  } else {
+    # Update game state
+    UpdateGameState
+    return "Closed"
+  }
 }
 
 
