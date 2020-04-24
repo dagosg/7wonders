@@ -936,7 +936,8 @@ proc Disconnect {{sock ""} {name ""}} {
     puts $sock "BOARD_Exit"
   }
   if { $name == "" } {
-    set name $state(name)
+    set name "Quelqu'un"
+    catch { set name $state(name) }
   }
 
   # Remove player
