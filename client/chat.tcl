@@ -19,8 +19,9 @@ proc CHAT_DisplayChat {} {
     text        .board.chat.fc.t -state disabled -yscrollcommand {.board.chat.fc.s set} -height 1 -width 10
     scrollbar   .board.chat.fc.s -command {.board.chat.fc.t yview}
     frame       .board.chat.fm -padx 4
-    text        .board.chat.fm.t -height 1 -width 10
-    button      .board.chat.fm.btn -text "ENVOYER" -default active -command { CHAT_SendChatMessage } -padx 2 -pady 0 -borderwidth 0 -relief flat
+    text        .board.chat.fm.t -height 1 -width 5
+    button      .board.chat.fm.btn -text "ENVOYER" -default active -command { CHAT_SendChatMessage } -padx 2 -pady 0 -borderwidth 0
+    button      .board.chat.fm.clr -text "X" -command { CHAT_Clear } -padx 2 -pady 0 -borderwidth 0  -relief flat
     wm protocol .board.chat WM_DELETE_WINDOW "GUI_Close .board.chat ; catch {wm attributes .board.chat -type tooltip} ; catch {wm attributes .board.chat -toolwindow 1} ; catch {wm attributes .board.chat -topmost 1}"
     catch {wm attributes .board.chat -type tooltip}
     catch {wm attributes .board.chat -toolwindow 1}
@@ -38,7 +39,7 @@ proc CHAT_DisplayChat {} {
       pack .board.chat.fc.t -side left -expand 1 -fill both
       pack .board.chat.fc.s -side left -expand 0 -fill y
       pack .board.chat.fm.t   -side left -expand 1 -fill x
-      pack .board.chat.fm.btn -side left -expand 0 -fill none
+      pack .board.chat.fm.btn .board.chat.fm.clr -side left -expand 0 -fill none
       TOOLS_SetShortcuts .board.chat
       update
       foreach player $game_state(player_list) {
@@ -59,7 +60,7 @@ proc CHAT_DisplayChat {} {
     }
   }
   if { ([winfo exists .board.chat]) && ($GUI_UPDATED < 0) } {
-    focus .board.chat
+    focus .board.chat.fm.t
   }
 }
 
@@ -78,8 +79,11 @@ proc CHAT_PrepareMessage {} {
   variable chat_message
 
   # Detect a new line
-  set lastline [expr int([$chat_message index "end - 1c"])]
-  if { $lastline > 1 } { CHAT_SendChatMessage }
+  set last_index [$chat_message index "end - 1c"]
+  set lastline [expr int($last_index)]
+  if { $lastline > 1 } {
+    CHAT_SendChatMessage
+  }
   $chat_message edit modified false
 }
 
@@ -91,6 +95,7 @@ proc CHAT_SendChatMessage {} {
   set message "[string trim [$chat_message get 1.0 end]]"
   $chat_message delete 1.0 end
   if { $message != "" } {
+    set message [string map {"\r" ""} $message]
     set lines [split $message "\n"]
     foreach line $lines {
       regsub -all "{" $line "\\{" line
@@ -123,4 +128,16 @@ proc CHAT_DisplayMessage {message color} {
   }
 }
 
+proc CHAT_Clear {} {
+  variable chat_text
+  variable tagnb
+
+  if { [winfo exists .board.chat] } {
+    $chat_text configure -state normal
+    $chat_text delete 0.0 end
+    $chat_text configure -state disabled
+    $chat_text yview moveto 1.0
+    set tagnb 0
+  }
+}
 

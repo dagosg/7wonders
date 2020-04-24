@@ -809,6 +809,13 @@ proc ManageTurn {{update_turn 1}} {
     }
   }
 
+  # After round first player selection, discarded card don't move
+  if { ($game_state(player_turn) == 29) || ($game_state(player_turn) == 49) } {
+    if { $game_state(play) != "" } {
+      set game_state(action_discard) -2
+    }
+  }
+
   # Manage next round
   if { $game_state(round) < 4 } {
     set game_state(round) 0
@@ -840,7 +847,7 @@ proc CheckConnectivity {} {
 
   foreach player $game_state(player_list) {
     set tls_socket [lindex $player 2]
-    if { [eof $tls_socket] } { Disconnect $tls_socket }
+    if { [eof $tls_socket] } { Disconnect $tls_socket [lindex $player 0] }
   }
 }
 
@@ -864,7 +871,7 @@ proc JoinGame {name obs} {
   foreach player $game_state(player_list) {
     if { [lindex $player 0] == $name } {
       # Disconnect the older one and start again
-      Disconnect [lindex $player 2]
+      Disconnect [lindex $player 2] [lindex $player 0]
       JoinGame $name $obs
       return
     }
@@ -917,7 +924,7 @@ proc JoinGame {name obs} {
 }
 
 # Client disconnexion
-proc Disconnect {{sock ""}} {
+proc Disconnect {{sock ""} {name ""}} {
   variable game_state
   upvar 1 state state
 
@@ -927,6 +934,9 @@ proc Disconnect {{sock ""}} {
     set sock $state(socket)
   } else {
     puts $sock "BOARD_Exit"
+  }
+  if { $name == "" } {
+    set name $state(name)
   }
 
   # Remove player
@@ -954,9 +964,10 @@ proc Disconnect {{sock ""}} {
   if { [llength $player_list] == 0 } {
     NewGame
   } else {
+    # Inform about deconnexion
+    SendMessageToAll "CHAT_DisplayMessage {$name s'est deconnecte} {black}"
     # Update game state
     UpdateGameState
-    return "Closed"
   }
 }
 

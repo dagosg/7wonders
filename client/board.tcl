@@ -147,7 +147,7 @@ proc BOARD_DisplayBoard {} {
   if { ![winfo exists .board] } {
     toplevel .board
     wm attributes .board -fullscreen 1
-    wm protocol .board WM_DELETE_WINDOW "catch {focus .board.chat}"
+    wm protocol .board WM_DELETE_WINDOW "catch { focus .board.chat.fm.t }"
     wm withdraw .board
     update
     if { [winfo exists .board] } {
@@ -161,7 +161,9 @@ proc BOARD_DisplayBoard {} {
   if { $GUI_UPDATED == -2 } { JETONS_CloseWindow }
   if { $game_state(action_discard) == -2 } {
     # No mouvement (load/refresh)
-    BOARD_UpdateBoard
+    if { ([winfo exists .board]) && ($GUI_UPDATED < 0) } {
+      BOARD_UpdateBoard
+    }
   } else {
     BOARD_AllMvt
   }
@@ -222,7 +224,7 @@ proc BOARD_AllMvt {} {
       } else {
         set MOVE_ENDY [BOARD_Scale 400]
         if { ($game_state($card(owner)) == $PLAYER_NAME) ||
-             (($card(owner) == "PLAYER_FIRST") && ($PLAYER_OBS == 1)) } {
+             (($card(owner) == "player_first") && ($PLAYER_OBS == 1)) } {
           set MOVE_ENDX [BOARD_Scale 50]
         } else {
           set MOVE_ENDX [BOARD_Scale 1050]
@@ -305,6 +307,7 @@ proc BOARD_MvtCard {} {
       BOARD_MvtWarrior
     }
   } else {
+    catch { focus .board.chat.fm.t }
     after 40 "BOARD_MvtCard"
   }
 }
@@ -333,6 +336,7 @@ proc BOARD_MvtJeton {} {
   if { $MOVE_STEP == 0 } {
     BOARD_UpdateBoard
   } else {
+    catch { focus .board.chat.fm.t }
     after 40 "BOARD_MvtJeton"
   }
 }
@@ -371,6 +375,7 @@ proc BOARD_MvtDiscard {} {
   if { $MOVE_STEP == 0 } {
     BOARD_UpdateBoard
   } else {
+    catch { focus .board.chat.fm.t }
     after 40 "BOARD_MvtDiscard"
   }
 }
@@ -432,6 +437,7 @@ proc BOARD_MvtWarriorPerform {} {
   if { $MOVE_STEP == 0 } {
     BOARD_UpdateBoard
   } else {
+    catch { focus .board.chat.fm.t }
     after 40 "BOARD_MvtWarriorPerform"
   }
 }
@@ -465,7 +471,7 @@ proc BOARD_UpdateBoard {} {
 
     # Load board image
     .board.c delete img_background img_board img_discard img_warrior img_malus_l0 img_malus_l1 img_malus_r0 img_malus_r1 txt_built txt_info
-    .board.c delete img_gold_p1 img_gold_p2 img_gold_t1 img_gold_t2 img_pv_p1 img_pv_p2 img_pv_t1 img_pv_t2 txt_names img_actions
+    .board.c delete img_gold_p1 img_gold_p2 img_gold_t1 img_gold_t2 img_pv_p1 img_pv_p2 img_pv_t1 img_pv_t2 txt_names img_actions img_rect2_wonder
     .board.c delete img_rect_wonder
     .board.c delete img_oval_jeton
     .board.c delete img_rect_card
@@ -589,7 +595,7 @@ proc BOARD_UpdateBoard {} {
               set coords [.board.c coords img_wonder$i]
               set x1 [expr [lindex $coords 0] + 2]
               set y1 [expr [lindex $coords 1] + 2]
-              set x2 [expr 149 + $x1 - 3]
+              set x2 [expr 149 + $x1 - 4]
               set y2 [expr  98 + $y1 - 4]
               .board.c create rectangle $x1 $y1 $x2 $y2 -outline "purple3" -width 4 -tags img_actions
             }
@@ -613,7 +619,7 @@ proc BOARD_UpdateBoard {} {
               set coords [.board.c coords img_wonder$i]
               set x1 [expr [lindex $coords 0] + 2]
               set y1 [expr [lindex $coords 1] + 2]
-              set x2 [expr 149 + $x1 - 3]
+              set x2 [expr 149 + $x1 - 4]
               set y2 [expr  98 + $y1 - 4]
               .board.c create rectangle $x1 $y1 $x2 $y2 -outline "purple3" -width 4 -tags img_actions
             }
@@ -621,6 +627,10 @@ proc BOARD_UpdateBoard {} {
           }
         }
       }
+    }
+    if { $game_state(player_turn) > 8 } {
+      .board.c create rectangle 2   745 598  845 -outline "brown" -width 3 -tags img_rect2_wonder
+      .board.c create rectangle 603 745 1199 845 -outline "brown" -width 3 -tags img_rect2_wonder
     }
 
     # Display random jetons
@@ -640,7 +650,8 @@ proc BOARD_UpdateBoard {} {
             .board.c bind img_jeton$i <Enter> "BOARD_HighlightJeton $i 1"
           } else {
             .board.c bind img_jeton$i <ButtonRelease-1> ""
-            .board.c bind img_jeton$i <Enter> ""
+            .board.c bind img_jeton$i <Leave> "BOARD_InfoJeton $i 0"
+            .board.c bind img_jeton$i <Enter> "BOARD_InfoJeton $i 1"
           }
         } elseif { ($game_state($jeton(owner)) == $PLAYER_NAME) ||
                    (($PLAYER_OBS == 1) && ($jeton(owner) == "player_first")) ||
@@ -722,7 +733,7 @@ proc BOARD_UpdateBoard {} {
       # Game set #1
       set img_back [image create photo]
       $img_back read "$SCRIPT_PATH/imgs/mini_cards1_back.png"
-      set img_warrior [BOARD_ZoomImage $img_back]
+      set img_back [BOARD_ZoomImage $img_back]
       for { set i 0 } { $i < 20 } { incr i } {
         if { [llength $game_state(cards1)] > $i } {
           array set card [lindex $game_state(cards1) $i]
@@ -939,8 +950,7 @@ proc BOARD_UpdateBoard {} {
       if { (![image inuse $name]) && ([string index $name 0] != ":") } { image delete $name }
     }
 
-    # Focus
-    focus .board
+    catch { focus .board.chat.fm.t }
   }
 }
 
@@ -1095,9 +1105,27 @@ proc BOARD_HighlightJeton {index value} {
   variable JETON_INDEX
   variable MODE_SEL
 
-  if { $value == 0 } { set JETON_INDEX -1 }
+  BOARD_InfoJeton $index $value
   if { ($MODE_SEL != 2) && ($MODE_SEL != 7) } { return }
   if { $value == 1 } { set JETON_INDEX $index }
+}
+
+# Jeton info
+variable INFO_JETON
+set INFO_JETON ""
+proc BOARD_InfoJeton {index value} {
+  variable game_state
+  variable INFO_JETON
+  variable JETON_INDEX
+
+  if { $value == 1 } {
+    array set jeton [lindex $game_state(jetons) $index]
+    set INFO_JETON "$jeton(desc)"
+  } else {
+    set JETON_INDEX -1
+    set INFO_JETON ""
+  }
+  BOARD_ManageInfoMessage
 }
 
 # Brown card highlighting
@@ -1144,11 +1172,17 @@ proc BOARD_ManageInfoMessage {} {
   variable game_state
   variable INFO_BAR
   variable INFO_SEL
+  variable INFO_JETON
 
   after 500 "BOARD_ManageWaitAuto"
   incr INFO_SEL
   if { $INFO_SEL >= 12 } { set INFO_SEL 0 }
   if { $DORECO == 1 } { return }
+  if { $INFO_JETON != "" } {
+    GUI_ShowInfo "$INFO_JETON" "DarkBlue"
+    catch { focus .board.chat.fm.t }
+    return
+  }
   if { [GUI_IsPlaying] == 1 } {
     if { $game_state(player_turn) <= 8 } {
       GUI_ShowInfo "[lindex $INFO_BAR([expr $INFO_SEL / 4]) 0] A VOUS DE JOUER: SELECTIONNEZ UNE MERVEILLE [lindex $INFO_BAR([expr $INFO_SEL / 4]) 1]" "DarkBlue"
