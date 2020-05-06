@@ -21,6 +21,7 @@ set commands {
   PlayBack
   PlayNext
   KillYou
+  IsTyping
 }
 
 # Kill server
@@ -78,6 +79,22 @@ set game_state(play)          "player_first"
 set game_state(version_server_minor) "$SERVER_VERSION_MINOR"
 set game_state(version_server_major) "$SERVER_VERSION_MAJOR"
 NewGame 0
+
+# Chat is typing
+proc IsTyping {} {
+  variable game_state
+  upvar 1 state state
+
+  # Send typing information to all players
+  foreach player $game_state(player_list) {
+    if { $state(name) != [lindex $player 0] } {
+      set tls_socket [lindex $player 2]
+      set msg "CHAT_IsTyping $state(name)"
+      catch { puts $tls_socket "$msg" }
+      puts stderr [regsub -all -line ^ $msg "$tls_socket < "]
+    }
+  }
+}
 
 # Save a game
 proc SaveGame {{gamefile "game.save"}} {
@@ -218,8 +235,6 @@ proc AddCardBonus {card_t} {
   set extra(13) [TOOLS_NbCardsByColor "blue"      "ALL"]
   set extra(14) [TOOLS_NbCardsByColor "green"     "ALL"]
   set extra(15) [TOOLS_NbCardsByColor "red"       "ALL"]
-  set extra(16) [TOOLS_NbWonderBuilt              "ALL"]
-  set extra(17) [TOOLS_NbGoldBonus                "ALL"]
   set bonus 0
   if { $card(extra) == 1  } { set bonus [expr $extra(1)  * 2] }
   if { $card(extra) == 2  } { set bonus [expr $extra(2)  * 3] }
@@ -231,8 +246,6 @@ proc AddCardBonus {card_t} {
   if { $card(extra) == 13 } { set bonus [expr $extra(13) * 1] }
   if { $card(extra) == 14 } { set bonus [expr $extra(14) * 1] }
   if { $card(extra) == 15 } { set bonus [expr $extra(15) * 1] }
-  if { $card(extra) == 16 } { set bonus [expr $extra(16) * 2] }
-  if { $card(extra) == 17 } { set bonus [expr $extra(17) * 1] }
   set game_state(gold_$play) [expr $game_state(gold_$play) + $bonus]
 }
 

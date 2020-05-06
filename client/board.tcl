@@ -2,7 +2,7 @@
 
 # Client version
 variable game_state
-set game_state(version_client) "c"
+set game_state(version_client) "d"
 
 # Initial values
 variable CARD_INDEX

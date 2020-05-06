@@ -221,6 +221,13 @@ proc TOOLS_GetPrice {name obs price {joker 0}} {
     set cost(4) 1
   }
 
+  # Checks
+  if { $cost(0) < 0 } { set cost(0) 0 }
+  if { $cost(1) < 0 } { set cost(1) 0 }
+  if { $cost(2) < 0 } { set cost(2) 0 }
+  if { $cost(3) < 0 } { set cost(3) 0 }
+  if { $cost(4) < 0 } { set cost(4) 0 }
+
   # Compute funds to pay
   set fund(0) [expr [lindex $price 0] - [lindex $FUNDS_P1 0]]
   set fund(1) [expr [lindex $price 1] - [lindex $FUNDS_P1 1]]
@@ -258,6 +265,13 @@ proc TOOLS_GetPrice {name obs price {joker 0}} {
     set index [TOOLS_Max [list $fund(0) $fund(1) $fund(2) $fund(3) $fund(4)] [list $cost(0) $cost(1) $cost(2) $cost(3) $cost(4)]]
     if { $index != -1 } { set fund($index) [expr $fund($index) - 1] }
   }
+
+  # Checks
+  if { $fund(0) < 0 } { set fund(0) 0 }
+  if { $fund(1) < 0 } { set fund(1) 0 }
+  if { $fund(2) < 0 } { set fund(2) 0 }
+  if { $fund(3) < 0 } { set fund(3) 0 }
+  if { $fund(4) < 0 } { set fund(4) 0 }
 
   # Compute best price for paying funds
   set total_cost [lindex $price 5]

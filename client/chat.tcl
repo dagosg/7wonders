@@ -62,6 +62,7 @@ proc CHAT_DisplayChat {} {
   if { ([winfo exists .board.chat]) && ($GUI_UPDATED < 0) } {
     focus .board.chat.fm.t
   }
+  CHAT_CheckTimeouts
 }
 
 # Set chat size and position
@@ -74,15 +75,125 @@ proc CHAT_SetSize {} {
   }
 }
 
+# Indicate someone is typing
+variable TTAG
+variable TYPING
+variable TTIME
+if { ![info exists TTAG] } {
+  set TTAG   -1
+  set TYPING {}
+  set TTIME  {}
+}
+proc CHAT_IsTyping {name} {
+  variable TYPING
+  variable TTAG
+  variable TTIME
+  variable chat_text
+
+  # Create tag if none
+  if { $TTAG == -1 } {
+    # First tag
+    set TTAG [CHAT_DisplayMessage "$name est en train d'ecrire" "black" 0]
+  }
+
+  # Append people typing
+  set index [lsearch -exact $TYPING $name]
+  if { $index == -1 } {
+    lappend TYPING $name
+    lappend TTIME [clock milliseconds]
+  } else {
+    # Just update time
+    set TTIME [lreplace $TTIME $index $index [clock milliseconds]]
+  }
+
+  # Update typing information
+  CHAT_UpdateTypingInfo
+}
+
+# Update typing information
+proc CHAT_UpdateTypingInfo {} {
+  variable TTAG
+  variable TYPING
+  variable chat_text
+
+  if { $TTAG != -1 } {
+    # If empty, clear typing info
+    if { [llength $TYPING] == 0 } {
+      CHAT_ClearTypingInfo
+    } else {
+      # Update content
+      $chat_text configure -state normal
+      $chat_text delete tag$TTAG.first "tag$TTAG.last - 1c"
+      $chat_text configure -state disabled
+      set loop [expr [llength $TYPING] - 1]
+      set names "[lindex $TYPING 0]"
+      for { set i 1 } { $i < $loop } { incr i } {
+        set names "$names, [lindex $TYPING $i]"
+      }
+      if { $loop > 0 } {
+        set names "$names et [lindex $TYPING $loop] sont en train d'ecrire..."
+      } else {
+        set names "$names est en train d'ecrire..."
+      }
+      set TTAG [CHAT_DisplayMessage "$names" "black" 0]
+    }
+  }
+}
+
+# Check timeouts
+proc CHAT_CheckTimeouts {} {
+  variable TYPING
+  variable TTIME
+
+  set upd 0
+  set new_typing {}
+  set new_ttime  {}
+  for { set i 0 } { $i < [llength $TYPING] } { incr i } {
+    set elapsed [expr [clock milliseconds] - [lindex $TTIME $i]]
+    if { $elapsed > 1500 } {
+      set upd 1
+    } else {
+      lappend new_typing [lindex $TYPING $i]
+      lappend new_ttime  [lindex $TTIME  $i]
+    }
+  }
+  if { $upd == 1 } {
+    set TYPING $new_typing
+    set TTIME  $new_ttime
+    CHAT_UpdateTypingInfo
+  }
+}
+
+# Clear typing information
+proc CHAT_ClearTypingInfo {} {
+  variable TTAG
+  variable TYPING
+  variable TTIME
+  variable chat_text
+
+  # Clear typing information
+  if { $TTAG != -1 } {
+    $chat_text configure -state normal
+    $chat_text delete tag$TTAG.first "tag$TTAG.last - 1c"
+    $chat_text configure -state disabled
+    set TTAG   -1
+    set TYPING {}
+    set TTIME  {}
+  }
+}
+
 # Text modified
 proc CHAT_PrepareMessage {} {
   variable chat_message
+  variable tcp_socket
 
   # Detect a new line
   set last_index [$chat_message index "end - 1c"]
   set lastline [expr int($last_index)]
   if { $lastline > 1 } {
     CHAT_SendChatMessage
+  } elseif { $last_index > 1.0 } {
+    catch { puts $tcp_socket "IsTyping" }
   }
   $chat_message edit modified false
 }
@@ -107,10 +218,13 @@ proc CHAT_SendChatMessage {} {
 
 # Display a new message
 variable tagnb
-set tagnb 0
-proc CHAT_DisplayMessage {message color} {
+if { ![info exists tagnb] } { set tagnb 0 }
+proc CHAT_DisplayMessage {message color {cleartyping 1}} {
   variable chat_text
   variable tagnb
+
+  # Clear typing information
+  if { $cleartyping == 1 } { CHAT_ClearTypingInfo }
 
   if { [winfo exists .board.chat] } {
     regsub -all "\\\\{" $message "{" message
@@ -124,20 +238,28 @@ proc CHAT_DisplayMessage {message color} {
     $chat_text tag configure tag$tagnb -font "$font 10"
     $chat_text configure -state disabled
     $chat_text yview moveto 1.0
+    set ret $tagnb
     incr tagnb
   }
+
+  return $ret
 }
 
+# Clear chat
 proc CHAT_Clear {} {
   variable chat_text
   variable tagnb
+  variable TTAG
 
   if { [winfo exists .board.chat] } {
     $chat_text configure -state normal
-    $chat_text delete 0.0 end
+    if { $TTAG != -1 } {
+      $chat_text delete 0.0 tag$TTAG.first
+    } else {
+      $chat_text delete 0.0 end
+    }
     $chat_text configure -state disabled
     $chat_text yview moveto 1.0
-    set tagnb 0
   }
 }
 

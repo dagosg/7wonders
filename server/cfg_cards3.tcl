@@ -143,7 +143,7 @@ set card(trade) {0 0}
 set card(funds) {0 0 0 0 0}
 set card(green) 0
 set card(extra) 0
-set card(color) ""
+set card(color) "blue"
 set card(owner) ""
 lappend CARDS3 [array get card]
 
