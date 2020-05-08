@@ -15,7 +15,7 @@ proc ACTION_DisplayActionCard {index} {
     frame .board.action_card.f2 -bd 2
     frame .board.action_card.f3 -bd 2
     button .board.action_card.f1.take
-    button .board.action_card.f2.discard -text "Defausser la carte"
+    button .board.action_card.f2.discard -text "Défausser la carte"
     button .board.action_card.f3.wonder  -text "Construire une merveille"
     catch {wm attributes .board.action_card -type tooltip}
     catch {wm attributes .board.action_card -toolwindow 1}
@@ -37,30 +37,30 @@ proc ACTION_DisplayActionCard {index} {
   # Manage action elements
   if { [winfo exists .board.action_card] } {
     wm resizable .board.action_card 1 1
-    set price [TOOLS_GetCardPrice $index $PLAYER_NAME $PLAYER_OBS]
+    set price [TOOLS_GetCardPrice $index "$PLAYER_NAME" $PLAYER_OBS]
     if { $price == 0 } {
       .board.action_card.f1.take configure -text "Acheter la carte (gratuit)"
     } elseif { $price == -1 } {
-      .board.action_card.f1.take configure -text "Acheter la carte par chainage (gratuit)"
+      .board.action_card.f1.take configure -text "Acheter la carte par chaînage (gratuit)"
       set price 0
     } else {
-      .board.action_card.f1.take configure -text "Acheter la carte pour $price pieces d'or"
+      .board.action_card.f1.take configure -text "Acheter la carte pour $price pièces d'or"
     }
-    if { $PLAYER_NAME == $game_state(player_first)  } { set play "player_first"  }
-    if { $PLAYER_NAME == $game_state(player_second) } { set play "player_second" }
+    if { "$PLAYER_NAME" == "$game_state(player_first)"  } { set play "player_first"  }
+    if { "$PLAYER_NAME" == "$game_state(player_second)" } { set play "player_second" }
     if { $price > $game_state(gold_$play) } {
       .board.action_card.f1.take configure -state disabled
     } else {
       .board.action_card.f1.take configure -state normal
     }
-    if { ([TOOLS_GetLastWonder] == -1) && ([TOOLS_NbWonderBuilt $PLAYER_NAME] < 4) } {
+    if { ([TOOLS_GetLastWonder] == -1) && ([TOOLS_NbWonderBuilt "$PLAYER_NAME"] < 4) } {
       .board.action_card.f3.wonder configure -state normal
     } else {
       .board.action_card.f3.wonder configure -state disabled
     }
 
     # Test if the user have already the same green
-    if { [TOOLS_CanTakeJeton $game_state(round) $index $PLAYER_NAME $PLAYER_OBS] == 1 } {
+    if { [TOOLS_CanTakeJeton $game_state(round) $index "$PLAYER_NAME" $PLAYER_OBS] == 1 } {
       .board.action_card.f1.take configure -command "ACTION_SelectJeton $index"
     } else {
       .board.action_card.f1.take configure -command "ACTION_SelectCard $index"
@@ -81,7 +81,7 @@ proc ACTION_DisplayActionWonder {index} {
   variable MODE_SEL
 
   if { $MODE_SEL != 1 } { return }
-  if { ![TOOLS_IsWonderSelectable $PLAYER_NAME $index] } { return }
+  if { ![TOOLS_IsWonderSelectable "$PLAYER_NAME" $index] } { return }
   if { ![winfo exists .board.action_wonder] } {
     toplevel .board.action_wonder -bd 4
     frame .board.action_wonder.f1 -bd 2
@@ -106,14 +106,14 @@ proc ACTION_DisplayActionWonder {index} {
   # Manage action elements
   if { [winfo exists .board.action_wonder] } {
     wm resizable .board.action_wonder 1 1
-    set price [TOOLS_GetWonderPrice $index $PLAYER_NAME $PLAYER_OBS]
+    set price [TOOLS_GetWonderPrice $index "$PLAYER_NAME" $PLAYER_OBS]
     if { $price == 0 } {
       .board.action_wonder.f1.take configure -text "Construire la merveille gratos"
     } else {
-      .board.action_wonder.f1.take configure -text "Construire la merveille pour $price pieces d'or"
+      .board.action_wonder.f1.take configure -text "Construire la merveille pour $price pièces d'or"
     }
-    if { $PLAYER_NAME == $game_state(player_first)  } { set play "player_first"  }
-    if { $PLAYER_NAME == $game_state(player_second) } { set play "player_second" }
+    if { "$PLAYER_NAME" == "$game_state(player_first)"  } { set play "player_first"  }
+    if { "$PLAYER_NAME" == "$game_state(player_second)" } { set play "player_second" }
     if { $price > $game_state(gold_$play) } {
       .board.action_wonder.f1.take configure -state disabled
     } else {
@@ -177,7 +177,7 @@ proc ACTION_BuildWonder {index} {
   if { $MODE_SEL != 1 } { return }
   ACTION_CloseActionWonder
   set MODE_SEL_WONDER $index
-  set MODE_SEL [TOOLS_GetWonderAction $index $PLAYER_NAME $PLAYER_OBS]
+  set MODE_SEL [TOOLS_GetWonderAction $index "$PLAYER_NAME" $PLAYER_OBS]
   BOARD_ManageInfoMessage
   if { $MODE_SEL == 1 } { ACTION_BuildWonderAndDiscard 1 }
   if { $MODE_SEL == 5 } { DISCARD_DisplayDiscardCards }
@@ -209,7 +209,7 @@ proc ACTION_BuildWonderAndRebirth {lvl num} {
   if { $MODE_SEL != 5 } { return }
   set MODE_SEL_CARDLVL $lvl
   set MODE_SEL_CARDNUM $num
-  if { [TOOLS_CanTakeJeton $lvl $num $PLAYER_NAME $PLAYER_OBS] == 0 } {
+  if { [TOOLS_CanTakeJeton $lvl $num "$PLAYER_NAME" $PLAYER_OBS] == 0 } {
     ACTION_BuildWonderAndDiscard 5 -1 $MODE_SEL_CARDLVL $MODE_SEL_CARDNUM -1
   } else {
     DISCARD_CloseWindow

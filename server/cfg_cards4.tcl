@@ -56,7 +56,7 @@
 set CARDS4 {}
 array set card ""
 
-set card(name)  "GUILDE DES ARMATEURS"
+set card(name)  "guilde des armateurs"
 set card(image) "cards4_guilde_armateurs.png"
 set card(price) {0 1 1 1 1 0}
 set card(chain) {0 0}
@@ -70,7 +70,7 @@ set card(color) "purple"
 set card(owner) ""
 lappend CARDS4 [array get card]
 
-set card(name)  "GUILDE DES COMMERCANTS"
+set card(name)  "guilde des commerçants"
 set card(image) "cards4_guilde_commercants.png"
 set card(price) {1 1 0 1 1 0}
 set card(chain) {0 0}
@@ -84,7 +84,7 @@ set card(color) "purple"
 set card(owner) ""
 lappend CARDS4 [array get card]
 
-set card(name)  "GUILDE DES MAGISTRATS"
+set card(name)  "guilde des magistrats"
 set card(image) "cards4_guilde_magistrats.png"
 set card(price) {2 1 0 1 0 0}
 set card(chain) {0 0}
@@ -98,7 +98,7 @@ set card(color) "purple"
 set card(owner) ""
 lappend CARDS4 [array get card]
 
-set card(name)  "GUILDE DES SCIENTIFIQUES"
+set card(name)  "guilde des scientifiques"
 set card(image) "cards4_guilde_scientifiques.png"
 set card(price) {2 2 0 0 0 0}
 set card(chain) {0 0}
@@ -112,7 +112,7 @@ set card(color) "purple"
 set card(owner) ""
 lappend CARDS4 [array get card]
 
-set card(name)  "GUILDE DES TACTICIENS"
+set card(name)  "guilde des tacticiens"
 set card(image) "cards4_guilde_tacticiens.png"
 set card(price) {0 1 2 1 0 0}
 set card(chain) {0 0}
@@ -126,7 +126,7 @@ set card(color) "purple"
 set card(owner) ""
 lappend CARDS4 [array get card]
 
-set card(name)  "GUILDE DES BATISSEURS"
+set card(name)  "guilde des bâtisseurs"
 set card(image) "cards4_guilde_batisseurs.png"
 set card(price) {1 1 2 0 1 0}
 set card(chain) {0 0}
@@ -140,7 +140,7 @@ set card(color) "purple"
 set card(owner) ""
 lappend CARDS4 [array get card]
 
-set card(name)  "GUILDE DES USURIERS"
+set card(name)  "guilde des usuriers"
 set card(image) "cards4_guilde_usuriers.png"
 set card(price) {2 0 2 0 0 0}
 set card(chain) {0 0}

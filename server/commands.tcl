@@ -64,9 +64,16 @@ proc NewGame {{msg 1}} {
   set game_state(action_discard_owner) ""
   set game_state(action_card)    ""
   if { $msg == 1 } {
+    set random [expr int(rand()*2)]
+    if { $random == 1 } {
+      set player_first  "$game_state(player_first)"
+      set player_second "$game_state(player_second)"
+      set game_state(player_second) "$player_first"
+      set game_state(player_first)  "$player_second"
+    }
     set game_state(player_turn) 1
     ManageTurn
-    return "GUI_Dialog {7 Wonders} {Nouvelle partie demarree}"
+    return "GUI_Dialog {7 Wonders} {Nouvelle partie demarrée}"      
   }
 }
 
@@ -87,9 +94,9 @@ proc IsTyping {} {
 
   # Send typing information to all players
   foreach player $game_state(player_list) {
-    if { $state(name) != [lindex $player 0] } {
+    if { "$state(name)" != "[lindex $player 0]" } {
       set tls_socket [lindex $player 2]
-      set msg "CHAT_IsTyping $state(name)"
+      set msg "CHAT_IsTyping {$state(name)}"
       catch { puts $tls_socket "$msg" }
       puts stderr [regsub -all -line ^ $msg "$tls_socket < "]
     }
@@ -104,7 +111,7 @@ proc SaveGame {{gamefile "game.save"}} {
   set fp [open "$SCRIPT_PATH/save/$gamefile" w]
   puts $fp [array get game_state]
   close $fp
-  return "GUI_Dialog {7 Wonders} {Partie sauvegardee}"
+  return "GUI_Dialog {7 Wonders} {Partie sauvegardée}"
 }
 
 # Load a game
@@ -115,21 +122,21 @@ proc LoadGame {{gamefile "game.save"}} {
   variable game_state
 
   set player_list   $game_state(player_list)
-  set player_first  $game_state(player_first)
-  set player_second $game_state(player_second)
+  set player_first  "$game_state(player_first)"
+  set player_second "$game_state(player_second)"
   if { [catch { set fp [open "$SCRIPT_PATH/save/$gamefile" r] } ] } {
     return
   }
   array set game_state [read $fp]
   close $fp
   set game_state(player_list) $player_list
-  if { ($game_state(player_second) == $player_first ) ||
-       ($game_state(player_first)  == $player_second) } {
-    set game_state(player_second) $player_first
-    set game_state(player_first)  $player_second
+  if { ("$game_state(player_second)" == "$player_first" ) ||
+       ("$game_state(player_first)"  == "$player_second") } {
+    set game_state(player_second) "$player_first"
+    set game_state(player_first)  "$player_second"
   } else {
-    set game_state(player_first)  $player_first
-    set game_state(player_second) $player_second
+    set game_state(player_first)  "$player_first"
+    set game_state(player_second) "$player_second"
   }
   set game_state(version_server_major) "$SERVER_VERSION_MAJOR"
   set game_state(version_server_minor) "$SERVER_VERSION_MINOR"
@@ -138,7 +145,7 @@ proc LoadGame {{gamefile "game.save"}} {
   # Load it
   ManageTurn 0
   if { $gamefile == "game.save" } {
-    return "GUI_Dialog {7 Wonders} {Partie chargee}"
+    return "GUI_Dialog {7 Wonders} {Partie chargée}"
   } else {
     return ""
   }
@@ -208,12 +215,12 @@ proc AddCardBonus {card_t} {
 
   # Add card gold and PV 
   array set card $card_t
-  if { $state(name) == $game_state(player_first)  } { set play "player_first"  }
-  if { $state(name) == $game_state(player_second) } { set play "player_second" }
+  if { "$state(name)" == "$game_state(player_first)"  } { set play "player_first"  }
+  if { "$state(name)" == "$game_state(player_second)" } { set play "player_second" }
   set game_state(gold_$play) [expr $game_state(gold_$play) + [lindex $card(bonus) 0]]
 
   # Add warriors
-  set warrior_joker [TOOLS_IsJetonBought "STRATEGIE" $state(name) $state(obs)]
+  set warrior_joker [TOOLS_IsJetonBought "STRATEGIE" "$state(name)" $state(obs)]
   set warrior [lindex $card(bonus) 2]
   if { $warrior > 0 } {
     if { $play == "player_first"  } {
@@ -225,11 +232,11 @@ proc AddCardBonus {card_t} {
   }
 
   # Add extra gold bonus
-  set extra(1) [TOOLS_NbCardsByColor "brown"  $state(name)]
-  set extra(2) [TOOLS_NbCardsByColor "gray"   $state(name)]
-  set extra(3) [TOOLS_NbCardsByColor "yellow" $state(name)]
-  set extra(4) [TOOLS_NbCardsByColor "red"    $state(name)]
-  set extra(5) [TOOLS_NbWonderBuilt           $state(name)]
+  set extra(1) [TOOLS_NbCardsByColor "brown"  "$state(name)"]
+  set extra(2) [TOOLS_NbCardsByColor "gray"   "$state(name)"]
+  set extra(3) [TOOLS_NbCardsByColor "yellow" "$state(name)"]
+  set extra(4) [TOOLS_NbCardsByColor "red"    "$state(name)"]
+  set extra(5) [TOOLS_NbWonderBuilt           "$state(name)"]
   set extra(11) [TOOLS_NbCardsByColor "browngray" "ALL"]
   set extra(12) [TOOLS_NbCardsByColor "yellow"    "ALL"]
   set extra(13) [TOOLS_NbCardsByColor "blue"      "ALL"]
@@ -254,9 +261,9 @@ proc StartRound {first_player} {
   variable game_state
   upvar 1 state state
 
-  if { $state(name) == $game_state(player_first)  } { set play "player_first"  ; set other "player_second" }
-  if { $state(name) == $game_state(player_second) } { set play "player_second" ; set other "player_first"  }
-  if { [TOOLS_IsNewRound $state(name)] == 1 } {
+  if { "$state(name)" == "$game_state(player_first)"  } { set play "player_first"  ; set other "player_second" }
+  if { "$state(name)" == "$game_state(player_second)" } { set play "player_second" ; set other "player_first"  }
+  if { [TOOLS_IsNewRound "$state(name)"] == 1 } {
     if { $first_player == "me" } {
       set game_state(play) $play
       set game_state(newround) ""
@@ -280,25 +287,25 @@ proc ManageWarrior {} {
     set game_state(malus_player_second) [lreplace $game_state(malus_player_second) 0 0 0]
     set game_state(gold_player_second) [expr $game_state(gold_player_second) - 2]
     if { $game_state(gold_player_second) < 0 } { set game_state(gold_player_second) 0 }
-    SendMessageToAll "CHAT_DisplayMessage {$game_state(player_second) a perdu 2 pieces d'or au combat} {black}"
+    SendMessageToAll "CHAT_DisplayMessage {$game_state(player_second) a perdu 2 pièces d'or au combat} {black}"
   }
   if { ($game_state(warrior) >= 6) && ([lindex $game_state(malus_player_second) 1] == 1) } {
     set game_state(malus_player_second) [lreplace $game_state(malus_player_second) 1 1 0]
     set game_state(gold_player_second) [expr $game_state(gold_player_second) - 5]
     if { $game_state(gold_player_second) < 0 } { set game_state(gold_player_second) 0 }
-    SendMessageToAll "CHAT_DisplayMessage {$game_state(player_second) a perdu 5 pieces d'or au combat} {black}"
+    SendMessageToAll "CHAT_DisplayMessage {$game_state(player_second) a perdu 5 pièces d'or au combat} {black}"
   }
   if { ($game_state(warrior) <= -3) && ([lindex $game_state(malus_player_first) 0] == 1) } {
     set game_state(malus_player_first) [lreplace $game_state(malus_player_first) 0 0 0]
     set game_state(gold_player_first) [expr $game_state(gold_player_first) - 2]
     if { $game_state(gold_player_first) < 0 } { set game_state(gold_player_first) 0 }
-    SendMessageToAll "CHAT_DisplayMessage {$game_state(player_first) a perdu 2 pieces d'or au combat} {black}"
+    SendMessageToAll "CHAT_DisplayMessage {$game_state(player_first) a perdu 2 pièces d'or au combat} {black}"
   }
   if { ($game_state(warrior) <= -6) && ([lindex $game_state(malus_player_first) 1] == 1) } {
     set game_state(malus_player_first) [lreplace $game_state(malus_player_first) 1 1 0]
     set game_state(gold_player_first) [expr $game_state(gold_player_first) - 5]
     if { $game_state(gold_player_first) < 0 } { set game_state(gold_player_first) 0 }
-    SendMessageToAll "CHAT_DisplayMessage {$game_state(player_first) a perdu 5 pieces d'or au combat} {black}"
+    SendMessageToAll "CHAT_DisplayMessage {$game_state(player_first) a perdu 5 pièces d'or au combat} {black}"
   }
 
   # Test warrior victory
@@ -316,7 +323,7 @@ proc ManageWarrior {} {
   # Test science victory
   set nb1 0
   set nb2 0
-  TOOLS_FillPlayersCards $game_state(player_first) 0
+  TOOLS_FillPlayersCards "$game_state(player_first)" 0
   set green_list {0}
   foreach card_t $CARDS_P1 {
     array set card $card_t
@@ -333,8 +340,8 @@ proc ManageWarrior {} {
       incr nb2
     }
   }
-  if { [TOOLS_IsJetonBought "LOI" $game_state(player_first)  $state(obs)] == 1 } { incr nb1 }
-  if { [TOOLS_IsJetonBought "LOI" $game_state(player_second) $state(obs)] == 1 } { incr nb2 }
+  if { [TOOLS_IsJetonBought "LOI" "$game_state(player_first)"  $state(obs)] == 1 } { incr nb1 }
+  if { [TOOLS_IsJetonBought "LOI" "$game_state(player_second)" $state(obs)] == 1 } { incr nb2 }
   if { $nb1 >= 6 } {
     set game_state(round) 4
     set game_state(win_science) "player_first"
@@ -356,13 +363,13 @@ proc BuildWonder {index_card index_wonder {index_discard -1} {rebirth_lvl -1} {r
   if { $state(obs) == 1 } {
     return "GUI_Dialog {Erreur Interne} {Un observateur ne peut pas construire de merveilles}"
   }
-  if { ([TOOLS_IsWonderSelectable $state(name) $index_wonder] == 1) &&
+  if { ([TOOLS_IsWonderSelectable "$state(name)" $index_wonder] == 1) &&
        ([TOOLS_IsCardSelectable $index_card] == 1) &&
        ([TOOLS_GetLastWonder ] == -1) &&
-       ([TOOLS_NbWonderBuilt $state(name)] < 4) } {
-    set price [TOOLS_GetWonderPrice $index_wonder $state(name) $state(obs)]
-    if { $state(name) == $game_state(player_first)  } { set play "player_first"  ; set other "player_second" }
-    if { $state(name) == $game_state(player_second) } { set play "player_second" ; set other "player_first"  }
+       ([TOOLS_NbWonderBuilt "$state(name)"] < 4) } {
+    set price [TOOLS_GetWonderPrice $index_wonder "$state(name)" $state(obs)]
+    if { "$state(name)" == "$game_state(player_first)"  } { set play "player_first"  ; set other "player_second" }
+    if { "$state(name)" == "$game_state(player_second)" } { set play "player_second" ; set other "player_first"  }
     if { $price <= $game_state(gold_$play) } {
       # Save previous turn
       SaveTurn
@@ -390,7 +397,7 @@ proc BuildWonder {index_card index_wonder {index_discard -1} {rebirth_lvl -1} {r
       set game_state(cards$j) [lreplace $game_state(cards$j) $index_card $index_card [array get card]]
 
       # With economie, pay price to the other player (only commerce)
-      if { ($price > 0) && ([TOOLS_IsJetonBought "ECONOMIE" $game_state($other) 0] == 1) } {
+      if { ($price > 0) && ([TOOLS_IsJetonBought "ECONOMIE" "$game_state($other)" 0] == 1) } {
         set game_state(gold_$other) [expr $game_state(gold_$other) + $price]
       }
 
@@ -401,10 +408,10 @@ proc BuildWonder {index_card index_wonder {index_discard -1} {rebirth_lvl -1} {r
 
       # Discard other card
       if { $index_discard >= 0 } {
-        TOOLS_FillPlayersCards $state(name) 0
+        TOOLS_FillPlayersCards "$state(name)" 0
         array set discard_card [lindex $CARDS_P2 $index_discard]
-        if { ([TOOLS_IsBrownCardSelectable $state(name) $index_discard] == 1) ||
-             ([TOOLS_IsGrayCardSelectable  $state(name) $index_discard] == 1) } {
+        if { ([TOOLS_IsBrownCardSelectable "$state(name)" $index_discard] == 1) ||
+             ([TOOLS_IsGrayCardSelectable  "$state(name)" $index_discard] == 1) } {
           set game_state(action_discard) $index_discard
           set game_state(action_discard_owner) $discard_card(owner)
           set discard_card(owner) "discard"
@@ -412,7 +419,7 @@ proc BuildWonder {index_card index_wonder {index_discard -1} {rebirth_lvl -1} {r
           TOOLS_ReplaceCard [array get discard_card]
 
           # Send message to all players
-          SendMessageToAll "CHAT_DisplayMessage {$state(name) a detruit la carte [string tolower $discard_card(name)] du joueur adverse} {black}"
+          SendMessageToAll "CHAT_DisplayMessage {$state(name) a détruit la carte [string tolower $discard_card(name)] du joueur adverse} {black}"
         }
       }
 
@@ -436,7 +443,7 @@ proc BuildWonder {index_card index_wonder {index_discard -1} {rebirth_lvl -1} {r
       SendMessageToAll "CHAT_DisplayMessage {$state(name) a construit la merveille [string tolower $wonder(name)]} {black}"
 
       # Manage next turn
-      if { ([lindex $wonder(bonus) 3] > 0) || ([TOOLS_IsJetonBought "THEOLOGIE" $state(name) $state(obs)] == 1) } {
+      if { ([lindex $wonder(bonus) 3] > 0) || ([TOOLS_IsJetonBought "THEOLOGIE" "$state(name)" $state(obs)] == 1) } {
         ManageTurn 0
       } else {
         ManageTurn
@@ -449,17 +456,17 @@ proc BuildWonder {index_card index_wonder {index_discard -1} {rebirth_lvl -1} {r
           set rebirth_card(owner) $play
           # Replace it
           TOOLS_ReplaceCard [array get rebirth_card]
-          set game_state(action_card) $rebirth_card(name)
+          set game_state(action_card) "$rebirth_card(name)"
 
           # Add cards bonus (bonus+extra)
           AddCardBonus [array get rebirth_card]
 
           # Send message to all players
-          SendMessageToAll "CHAT_DisplayMessage {$state(name) a recupere la carte [string tolower $rebirth_card(name)] de la defausse} {black}"
+          SendMessageToAll "CHAT_DisplayMessage {$state(name) a récupéré la carte [string tolower $rebirth_card(name)] de la défausse} {black}"
 
           # Test green cards
           if { ([TOOLS_IsJetonSelectable $index_jeton] == 1) &&
-               ([TOOLS_CanTakeJeton $rebirth_lvl $rebirth_num $state(name) $state(obs)] == 1) &&
+               ([TOOLS_CanTakeJeton $rebirth_lvl $rebirth_num "$state(name)" $state(obs)] == 1) &&
                ([lindex $wonder(trick) 1] > 0) } {
             # Add jeton bonus
             array set jeton [lindex $game_state(jetons) $index_jeton]
@@ -471,7 +478,7 @@ proc BuildWonder {index_card index_wonder {index_discard -1} {rebirth_lvl -1} {r
             set game_state(action_jeton) $index_jeton
 
             # Send message to all players
-            SendMessageToAll "CHAT_DisplayMessage {$state(name) a recupere le jeton [string tolower $jeton(name)]} {black}"
+            SendMessageToAll "CHAT_DisplayMessage {$state(name) a récupéré le jeton [string tolower $jeton(name)]} {black}"
           }
         }
       }
@@ -489,7 +496,7 @@ proc BuildWonder {index_card index_wonder {index_discard -1} {rebirth_lvl -1} {r
         set game_state(gold_$play) [expr $game_state(gold_$play) + [lindex $jeton3(bonus) 0]]
 
         # Send message to all players
-        SendMessageToAll "CHAT_DisplayMessage {$state(name) a recupere le jeton [string tolower $jeton3(name)]} {black}"
+        SendMessageToAll "CHAT_DisplayMessage {$state(name) a récupéré le jeton [string tolower $jeton3(name)]} {black}"
       }
 
       # Manage warrior
@@ -501,7 +508,7 @@ proc BuildWonder {index_card index_wonder {index_discard -1} {rebirth_lvl -1} {r
       return "GUI_Dialog {Action impossible} {Stock d'or insuffisant}"
     }
   } else {
-    return "GUI_Dialog {Erreur Interne} {Carte ou merveille selectionnee invalide}"
+    return "GUI_Dialog {Erreur Interne} {Carte ou merveille selectionnée invalide}"
   }
 }
 
@@ -514,14 +521,14 @@ proc TakeCard {index_card index_jeton} {
     return "GUI_Dialog {Erreur Interne} {Un observateur ne peut pas acheter de cartes}"
   }
   if { [TOOLS_IsCardSelectable $index_card] == 1 } {
-    set price [TOOLS_GetCardPrice $index_card $state(name) $state(obs)]
+    set price [TOOLS_GetCardPrice $index_card "$state(name)" $state(obs)]
     set chain 0
     if { $price == -1 } {
       set chain 1
       set price 0
     }
-    if { $state(name) == $game_state(player_first)  } { set play "player_first"  ; set other "player_second" }
-    if { $state(name) == $game_state(player_second) } { set play "player_second" ; set other "player_first"  }
+    if { "$state(name)" == "$game_state(player_first)"  } { set play "player_first"  ; set other "player_second" }
+    if { "$state(name)" == "$game_state(player_second)" } { set play "player_second" ; set other "player_first"  }
     if { $price <= $game_state(gold_$play) } {
       # Save previous turn
       SaveTurn
@@ -544,7 +551,7 @@ proc TakeCard {index_card index_jeton} {
       set game_state(action_jeton)   -1
 
       # With economie, pay price to the other player (only commerce)
-      if { ($price > 0) && ([TOOLS_IsJetonBought "ECONOMIE" $game_state($other) 0] == 1) } {
+      if { ($price > 0) && ([TOOLS_IsJetonBought "ECONOMIE" "$game_state($other)" 0] == 1) } {
         set game_state(gold_$other) [expr $game_state(gold_$other) + $price - [lindex $card(price) 5]]
       }
 
@@ -552,16 +559,16 @@ proc TakeCard {index_card index_jeton} {
       AddCardBonus [array get card]
 
       # Add gold if chain and wonder
-      if { ($chain == 1) && ([TOOLS_IsJetonBought "URBANISME" $state(name) $state(obs)] == 1) } {
+      if { ($chain == 1) && ([TOOLS_IsJetonBought "URBANISME" "$state(name)" $state(obs)] == 1) } {
         set game_state(gold_$play) [expr $game_state(gold_$play) + 4]
       }
 
       # Send message to all players
-      SendMessageToAll "CHAT_DisplayMessage {$state(name) a achete la carte [string tolower $card(name)]} {black}"
+      SendMessageToAll "CHAT_DisplayMessage {$state(name) a acheté la carte [string tolower $card(name)]} {black}"
 
       # Test green cards
       if { ([TOOLS_IsJetonSelectable $index_jeton] == 1) &&
-           ([TOOLS_CanTakeJeton $game_state(round) $index_card $state(name) $state(obs)] == 1) } {
+           ([TOOLS_CanTakeJeton $game_state(round) $index_card "$state(name)" $state(obs)] == 1) } {
         # Add jeton bonus
         array set jeton [lindex $game_state(jetons) $index_jeton]
         set game_state(gold_$play) [expr $game_state(gold_$play) + [lindex $jeton(bonus) 0]]
@@ -572,7 +579,7 @@ proc TakeCard {index_card index_jeton} {
         set game_state(action_jeton) $index_jeton
 
         # Send message to all players
-        SendMessageToAll "CHAT_DisplayMessage {$state(name) a recupere le jeton [string tolower $jeton(name)]} {black}"
+        SendMessageToAll "CHAT_DisplayMessage {$state(name) a récupéré le jeton [string tolower $jeton(name)]} {black}"
       }
 
       # Manage warrior
@@ -587,7 +594,7 @@ proc TakeCard {index_card index_jeton} {
       return "GUI_Dialog {Action impossible} {Stock d'or insuffisant}"
     }
   } else {
-    return "GUI_Dialog {Erreur Interne} {Carte selectionnee invalide}"
+    return "GUI_Dialog {Erreur Interne} {Carte sélectionnée invalide}"
   }
 }
 
@@ -598,7 +605,7 @@ proc DiscardCard {index} {
   upvar 1 state state
 
   if { $state(obs) == 1 } {
-    return "GUI_Dialog {Erreur Interne} {Un observateur ne peut pas defausser de cartes}"
+    return "GUI_Dialog {Erreur Interne} {Un observateur ne peut pas défausser de cartes}"
   }
   if { [TOOLS_IsCardSelectable $index] == 1 } {
     # Save previous turn
@@ -613,9 +620,9 @@ proc DiscardCard {index} {
     set game_state(action_jeton)   -1
 
     # Add money
-    if { $state(name) == $game_state(player_first)  } { set play "player_first"  }
-    if { $state(name) == $game_state(player_second) } { set play "player_second" }
-    TOOLS_FillPlayersCards $state(name) $state(obs)
+    if { "$state(name)" == "$game_state(player_first)"  } { set play "player_first"  }
+    if { "$state(name)" == "$game_state(player_second)" } { set play "player_second" }
+    TOOLS_FillPlayersCards "$state(name)" $state(obs)
     set nb_yellow 0
     for { set i 0 } { $i < [llength $CARDS_P1] } { incr i } {
       array set card [lindex $CARDS_P1 $i]
@@ -630,18 +637,18 @@ proc DiscardCard {index} {
     array set card [lindex $game_state(cards$j) $index]
     set card(owner) "discard"
     set game_state(cards$j) [lreplace $game_state(cards$j) $index $index [array get card]]
-    set game_state(action_card) $card(name)
+    set game_state(action_card) "$card(name)"
 
     # Next turn
     set game_state(player_turn) [expr $game_state(player_turn) + 1]
 
     # Send message to all players
-    SendMessageToAll "CHAT_DisplayMessage {$state(name) a defausse la carte [string tolower $card(name)]} {black}"
+    SendMessageToAll "CHAT_DisplayMessage {$state(name) a défaussé la carte [string tolower $card(name)]} {black}"
 
     # Manage next turn
     ManageTurn
   } else {
-    return "GUI_Dialog {Erreur Interne} {Carte selectionnee invalide}"
+    return "GUI_Dialog {Erreur Interne} {Carte sélectionnée invalide}"
   }
 }
 
@@ -654,8 +661,8 @@ proc SelectWonder {num} {
     if { $game_state(player_turn) > 4 } { set num [expr $num + 4] }
     array set wonder [lindex $game_state(wonders) $num]
     if { $wonder(owner) == "" } {
-      if { ($state(name) == $game_state(player_first))  && ($game_state(play) == "player_first" ) } { set wonder(owner) "player_first"  }
-      if { ($state(name) == $game_state(player_second)) && ($game_state(play) == "player_second") } { set wonder(owner) "player_second" }
+      if { ("$state(name)" == "$game_state(player_first)" ) && ($game_state(play) == "player_first" ) } { set wonder(owner) "player_first"  }
+      if { ("$state(name)" == "$game_state(player_second)") && ($game_state(play) == "player_second") } { set wonder(owner) "player_second" }
       if { $wonder(owner) == "" } {
         return "GUI_Dialog {Erreur Interne} {Observateur (TODO) ou erreur de joueur}"
       } else {
@@ -675,7 +682,7 @@ proc SelectWonder {num} {
         ManageTurn
       }
     } else {
-      return "GUI_Dialog {Erreur Interne} {Merveille deja prise par $game_state($wonder(owner))}"
+      return "GUI_Dialog {Erreur Interne} {Merveille déjà prise par $game_state($wonder(owner))}"
     }
   } else {
     return "GUI_Dialog {Erreur Interne} {Indice de merveille $num en erreur}"
@@ -688,9 +695,9 @@ proc SendChatMessage {message} {
   upvar 1 state state
 
   # Get player color
-  if { $game_state(player_first) == $state(name) } {
+  if { "$game_state(player_first)" == "$state(name)" } {
     set color "DarkBlue"
-  } elseif { $game_state(player_second) == $state(name) } {
+  } elseif { "$game_state(player_second)" == "$state(name)" } {
     set color "DarkGreen"
   } else {
     set color "DarkGray"
@@ -809,21 +816,23 @@ proc ManageTurn {{update_turn 1}} {
     }
 
     # Round 29/49: Determine first player
-    if { ($game_state(player_turn) == 29) || ($game_state(player_turn) == 49) } {
+    if { ($game_state(player_turn) == 29) ||
+         ($game_state(player_turn) == 49) } {
       set game_state(play) ""
       if { $game_state(warrior) > 0 } { set game_state(newround) "player_second" }
       if { $game_state(warrior) < 0 } { set game_state(newround) "player_first"  }
       if { $game_state(warrior) == 0 } {
         catch {
-          if { $state(name) == $game_state(player_first)  } { set game_state(newround) "player_first"  }
-          if { $state(name) == $game_state(player_second) } { set game_state(newround) "player_second" }
+          if { "$state(name)" == "$game_state(player_first)"  } { set game_state(newround) "player_first"  }
+          if { "$state(name)" == "$game_state(player_second)" } { set game_state(newround) "player_second" }
         }
       }
     }
   }
 
   # After round first player selection, discarded card don't move
-  if { ($game_state(player_turn) == 29) || ($game_state(player_turn) == 49) } {
+  if { ($game_state(player_turn) == 29) ||
+       ($game_state(player_turn) == 49) } {
     if { $game_state(play) != "" } {
       set game_state(action_discard) -2
     }
@@ -860,8 +869,14 @@ proc CheckConnectivity {} {
 
   foreach player $game_state(player_list) {
     set tls_socket [lindex $player 2]
-    if { [eof $tls_socket] } { Disconnect $tls_socket [lindex $player 0] }
+    if { [eof $tls_socket] } { Disconnect $tls_socket "[lindex $player 0]" }
   }
+}
+
+# To strip chars for name
+proc stripchars {str chars} {
+  foreach c [split $chars ""] {set str [string map [list $c ""] $str]}
+  return $str
 }
 
 # Command used to join a game
@@ -872,25 +887,29 @@ proc JoinGame {name obs} {
   # Check clients connectivity
   CheckConnectivity
 
+  # Strip name
+  set name [stripchars "$name" {!-${}*+\[]()\/:^"¨~*§ùµ;.?=°@_`|#&<>'}]
+  set name [string trim "$name"]
+
   # Check maximum number of clients
   set nb_clients [llength $game_state(player_list)]
   if { $nb_clients > 10 } {
-    return "GUI_Dialog {Erreur de connexion} {Trop de joueurs connectes!}"
+    return "GUI_Dialog {Erreur de connexion} {Trop de joueurs connectés!}"
   }
 
   # Get number of players
   set nb_players 0
   set players {}
   foreach player $game_state(player_list) {
-    if { [lindex $player 0] == $name } {
+    if { "[lindex $player 0]" == "$name" } {
       # Disconnect the older one and start again
-      Disconnect [lindex $player 2] [lindex $player 0]
-      JoinGame $name $obs
+      Disconnect [lindex $player 2] "[lindex $player 0]"
+      JoinGame "$name" $obs
       return
     }
     if { [lindex $player 1] == 0 } {
       incr nb_players
-      lappend players [lindex $player 0]
+      lappend players "[lindex $player 0]"
     }
   }
 
@@ -900,32 +919,32 @@ proc JoinGame {name obs} {
     UpdateGameState
 
     # Display an error
-    return "GUI_Dialog {Erreur de connexion} {Les deux joueurs sont deja connectes, essayez en observateur!}"
+    return "GUI_Dialog {Erreur de connexion} {Les deux joueurs sont déjà connectés, essayez en observateur!}"
   }
 
   # Add player
-  lappend game_state(player_list) [list $name $obs $state(socket)]
-  set state(name) $name
+  lappend game_state(player_list) [list "$name" $obs $state(socket)]
+  set state(name) "$name"
   set state(obs)  $obs
   if { $obs == 0 } {
     incr nb_players
-    lappend players $name
+    lappend players "$name"
   }
   # If 2 real players are here now:
   if { $nb_players >= 2 } {
     # Select first player if necessary (random)
     if { $game_state(player_turn) == 0 } {
       set player_first [expr int(rand()*2)]
-      set game_state(player_first)  [lindex $players $player_first]
-      set game_state(player_second) [lindex $players [expr 1 - $player_first]]
+      set game_state(player_first)  "[lindex $players $player_first]"
+      set game_state(player_second) "[lindex $players [expr 1 - $player_first]]"
       set game_state(player_turn) 1
-    } elseif { ($game_state(player_first) == "") && ($game_state(player_second) == "") } {
-      set game_state(player_first)  [lindex $players 0]
-      set game_state(player_second) [lindex $players 1]
-    } elseif { $game_state(player_first) == "" } {
-      set game_state(player_first) $name
-    } elseif { $game_state(player_second) == "" } {
-      set game_state(player_second) $name
+    } elseif { ("$game_state(player_first)" == "") && ("$game_state(player_second)" == "") } {
+      set game_state(player_first)  "[lindex $players 0]"
+      set game_state(player_second) "[lindex $players 1]"
+    } elseif { "$game_state(player_first)"  == "" } {
+      set game_state(player_first)  "$name"
+    } elseif { "$game_state(player_second)" == "" } {
+      set game_state(player_second) "$name"
     }
 
     # Manage the turn
@@ -948,9 +967,9 @@ proc Disconnect {{sock ""} {name ""}} {
   } else {
     puts $sock "BOARD_Exit"
   }
-  if { $name == "" } {
+  if { "$name" == "" } {
     set name "Quelqu'un"
-    catch { set name $state(name) }
+    catch { set name "$state(name)" }
   }
 
   # Remove player
@@ -961,10 +980,10 @@ proc Disconnect {{sock ""} {name ""}} {
       lappend player_list $player
     } else {
       # Remove him from players (will be replaced by the next one to connect)
-      if { $game_state(player_first) == [lindex $player 0] } {
+      if { "$game_state(player_first)" == "[lindex $player 0]" } {
         set game_state(player_first) ""
       }
-      if { $game_state(player_second) == [lindex $player 0] } {
+      if { "$game_state(player_second)" == "[lindex $player 0]" } {
         set game_state(player_second) ""
       }
     }
@@ -979,7 +998,7 @@ proc Disconnect {{sock ""} {name ""}} {
     NewGame
   } else {
     # Inform about deconnexion
-    SendMessageToAll "CHAT_DisplayMessage {$name s'est deconnecte} {black}"
+    SendMessageToAll "CHAT_DisplayMessage {$name s'est déconnecté} {black}"
     # Update game state
     UpdateGameState
   }

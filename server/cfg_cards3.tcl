@@ -20,11 +20,18 @@
 
 # Extra:
 # 0: None
-# 1: 2GoldxBrown
-# 2: 3GoldxGray
-# 3: 1GoldxYellow
-# 4: 1GoldxRed
-# 5: 2GoldxWonders
+# 1: 2Gold x Brown
+# 2: 3Gold x Gray
+# 3: 1Gold x Yellow
+# 4: 1Gold x Red
+# 5: 2Gold x Wonders
+# 11: 1GoldPV x (Brown + Gray)
+# 12: 1GoldPV x Yellow
+# 13: 1GoldPV x Blue
+# 14: 1GoldPV x Green
+# 15: 1GoldPV x Red
+# 16: 2PV x Wonders
+# 17: 1PV x 3Gold
 
 # Chains
 # 0: None
@@ -49,7 +56,7 @@
 set CARDS3 {}
 array set card ""
 
-set card(name)  "UNIVERSITE"
+set card(name)  "université"
 set card(image) "cards3_universite.png"
 set card(price) {0 1 0 1 1 0}
 set card(chain) {0 12}
@@ -63,7 +70,7 @@ set card(color) "green"
 set card(owner) ""
 lappend CARDS3 [array get card]
 
-set card(name)  "SENAT"
+set card(name)  "sénat"
 set card(image) "cards3_senat.png"
 set card(price) {0 2 1 1 0 0}
 set card(chain) {0 15}
@@ -77,7 +84,7 @@ set card(color) "blue"
 set card(owner) ""
 lappend CARDS3 [array get card]
 
-set card(name)  "PRETOIRE"
+set card(name)  "prétoire"
 set card(image) "cards3_pretoire.png"
 set card(price) {0 0 0 0 0 8}
 set card(chain) {0 0}
@@ -91,7 +98,7 @@ set card(color) "red"
 set card(owner) ""
 lappend CARDS3 [array get card]
 
-set card(name)  "PORT"
+set card(name)  "port"
 set card(image) "cards3_port.png"
 set card(price) {1 0 0 1 1 0}
 set card(chain) {0 0}
@@ -105,7 +112,7 @@ set card(color) "yellow"
 set card(owner) ""
 lappend CARDS3 [array get card]
 
-set card(name)  "PHARE"
+set card(name)  "phare"
 set card(image) "cards3_phare.png"
 set card(price) {0 2 0 0 1 0}
 set card(chain) {0 9}
@@ -119,7 +126,7 @@ set card(color) "yellow"
 set card(owner) ""
 lappend CARDS3 [array get card]
 
-set card(name)  "PANTHEON"
+set card(name)  "panthéon"
 set card(image) "cards3_pantheon.png"
 set card(price) {1 1 0 2 0 0}
 set card(chain) {0 17}
@@ -133,7 +140,7 @@ set card(color) "blue"
 set card(owner) ""
 lappend CARDS3 [array get card]
 
-set card(name)  "PALACE"
+set card(name)  "palace"
 set card(image) "cards3_palace.png"
 set card(price) {1 1 1 0 2 0}
 set card(chain) {0 0}
@@ -147,7 +154,7 @@ set card(color) "blue"
 set card(owner) ""
 lappend CARDS3 [array get card]
 
-set card(name)  "OBSERVATOIRE"
+set card(name)  "observatoire"
 set card(image) "cards3_observatoire.png"
 set card(price) {0 0 1 2 0 0}
 set card(chain) {0 13}
@@ -161,7 +168,7 @@ set card(color) "green"
 set card(owner) ""
 lappend CARDS3 [array get card]
 
-set card(name)  "OBELISQUE"
+set card(name)  "obélisque"
 set card(image) "cards3_obelisque.png"
 set card(price) {0 0 2 0 1 0}
 set card(chain) {0 0}
@@ -175,7 +182,7 @@ set card(color) "blue"
 set card(owner) ""
 lappend CARDS3 [array get card]
 
-set card(name)  "JARDINS"
+set card(name)  "jardins"
 set card(image) "cards3_jardins.png"
 set card(price) {2 2 0 0 0 0}
 set card(chain) {0 16}
@@ -189,7 +196,7 @@ set card(color) "blue"
 set card(owner) ""
 lappend CARDS3 [array get card]
 
-set card(name)  "HOTEL DE VILLE"
+set card(name)  "hôtel de ville"
 set card(image) "cards3_hotel_ville.png"
 set card(price) {2 0 3 0 0 0}
 set card(chain) {0 0}
@@ -203,7 +210,7 @@ set card(color) "blue"
 set card(owner) ""
 lappend CARDS3 [array get card]
 
-set card(name)  "FORTIFICATIONS"
+set card(name)  "fortifications"
 set card(image) "cards3_fortifications.png"
 set card(price) {0 1 2 1 0 0}
 set card(chain) {0 6}
@@ -217,7 +224,7 @@ set card(color) "red"
 set card(owner) ""
 lappend CARDS3 [array get card]
 
-set card(name)  "ETUDE"
+set card(name)  "étude"
 set card(image) "cards3_etude.png"
 set card(price) {2 0 0 1 1 0}
 set card(chain) {0 0}
@@ -231,7 +238,7 @@ set card(color) "green"
 set card(owner) ""
 lappend CARDS3 [array get card]
 
-set card(name)  "ACADEMIE"
+set card(name)  "academie"
 set card(image) "cards3_academie.png"
 set card(price) {1 0 1 0 2 0}
 set card(chain) {0 0}
@@ -245,7 +252,7 @@ set card(color) "green"
 set card(owner) ""
 lappend CARDS3 [array get card]
 
-set card(name)  "CIRQUE"
+set card(name)  "cirque"
 set card(image) "cards3_cirque.png"
 set card(price) {0 2 2 0 0 0}
 set card(chain) {0 14}
@@ -259,7 +266,7 @@ set card(color) "red"
 set card(owner) ""
 lappend CARDS3 [array get card]
 
-set card(name)  "CHAMBRE DE COMMERCE"
+set card(name)  "chambre de commerce"
 set card(image) "cards3_chambre_commerce.png"
 set card(price) {0 0 0 2 0 0}
 set card(chain) {0 0}
@@ -273,7 +280,7 @@ set card(color) "yellow"
 set card(owner) ""
 lappend CARDS3 [array get card]
 
-set card(name)  "ARENE"
+set card(name)  "arène"
 set card(image) "cards3_arene.png"
 set card(price) {1 1 1 0 0 0}
 set card(chain) {0 10}
@@ -287,7 +294,7 @@ set card(color) "yellow"
 set card(owner) ""
 lappend CARDS3 [array get card]
 
-set card(name)  "ATELIER DE SIEGE"
+set card(name)  "atelier de siège"
 set card(image) "cards3_atelier_siege.png"
 set card(price) {3 0 0 0 1 0}
 set card(chain) {0 11}
@@ -301,7 +308,7 @@ set card(color) "red"
 set card(owner) ""
 lappend CARDS3 [array get card]
 
-set card(name)  "ARSENAL"
+set card(name)  "arsenal"
 set card(image) "cards3_arsenal.png"
 set card(price) {2 3 0 0 0 0}
 set card(chain) {0 0}
@@ -315,7 +322,7 @@ set card(color) "red"
 set card(owner) ""
 lappend CARDS3 [array get card]
 
-set card(name)  "ARMURERIE"
+set card(name)  "armurerie"
 set card(image) "cards3_armurerie.png"
 set card(price) {0 0 2 0 1 0}
 set card(chain) {0 0}

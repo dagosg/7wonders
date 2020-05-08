@@ -5,7 +5,7 @@ proc NEWROUND_DisplayNewRound {} {
   variable PLAYER_NAME
   variable GUI_UPDATED
 
-  if { [TOOLS_IsNewRound $PLAYER_NAME] == 0 } {
+  if { [TOOLS_IsNewRound "$PLAYER_NAME"] == 0 } {
     NEWROUND_CloseWindow
   } elseif { ![winfo exists .board.newround] } {
     toplevel .board.newround -bd 0

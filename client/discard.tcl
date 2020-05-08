@@ -20,7 +20,7 @@ proc DISCARD_DisplayDiscardCards {} {
     wm withdraw .board.discard
     update
     if { [winfo exists .board.discard] } {
-      wm title .board.discard "7 Wonders Duel - Explorer la defausse"
+      wm title .board.discard "7 Wonders Duel - Explorer la défausse"
       wm transient .board.discard .
       wm deiconify .board.discard
       TOOLS_SetShortcuts .board.discard
@@ -67,11 +67,11 @@ proc DISCARD_UpdateDiscardCards {} {
           set index [lindex $game_state(action_wcard) 1]
           if { $index >= 0 } {
             array set discarded_card [lindex $game_state(cards$round) $index]
-            set name $discarded_card(name)
+            set name "$discarded_card(name)"
           } else {
             set name ""
           }
-          if { $name == $card(name) } {
+          if { "$name" == "$card(name)" } {
             set coords [.board.discard.c coords img_dcards$nb_cards]
             set x1 [expr [lindex $coords 0] + 1]
             set y1 [expr [lindex $coords 1] + 1]

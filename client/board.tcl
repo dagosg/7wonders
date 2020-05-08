@@ -2,7 +2,7 @@
 
 # Client version
 variable game_state
-set game_state(version_client) "d"
+set game_state(version_client) "e"
 
 # Initial values
 variable CARD_INDEX
@@ -223,7 +223,7 @@ proc BOARD_AllMvt {} {
         set MOVE_ENDY [BOARD_Scale 100]
       } else {
         set MOVE_ENDY [BOARD_Scale 400]
-        if { ($game_state($card(owner)) == $PLAYER_NAME) ||
+        if { ("$game_state($card(owner))" == "$PLAYER_NAME") ||
              (($card(owner) == "player_first") && ($PLAYER_OBS == 1)) } {
           set MOVE_ENDX [BOARD_Scale 50]
         } else {
@@ -271,7 +271,7 @@ proc BOARD_MvtCard {} {
       set MOVE_STARTY [lindex $coords 1]
       # Destination position
       set MOVE_ENDY [BOARD_Scale 5]
-      if { ($game_state($jeton(owner)) == $PLAYER_NAME) ||
+      if { ("$game_state($jeton(owner))" == "$PLAYER_NAME") ||
            (($PLAYER_OBS == 1) && ($jeton(owner) == "player_first")) } {
         set MOVE_ENDX [BOARD_Scale 50]
       } else {
@@ -289,7 +289,7 @@ proc BOARD_MvtCard {} {
                ($game_state(action_discard) >= 0) && 
                ($game_state(action_discard_owner) != "") } {
       # Source position
-      if { ($game_state($game_state(action_discard_owner)) == $PLAYER_NAME) ||
+      if { ("$game_state($game_state(action_discard_owner))" == "$PLAYER_NAME") ||
            (($PLAYER_OBS == 1) && ($game_state(action_discard_owner) == "player_first")) } {
         set coords [.board.c coords img_cards_p1_$game_state(action_discard)]
       } else {
@@ -363,7 +363,7 @@ proc BOARD_MvtDiscard {} {
   }
 
   # Find card
-  if { ($game_state($game_state(action_discard_owner)) == $PLAYER_NAME) ||
+  if { ("$game_state($game_state(action_discard_owner))" == "$PLAYER_NAME") ||
        (($PLAYER_OBS == 1) && ($game_state(action_discard_owner) == "player_first")) } {
     set img "img_cards_p1_$game_state(action_discard)"
   } else {
@@ -399,7 +399,7 @@ proc BOARD_MvtWarrior {} {
     set MOVE_STARTY [lindex $coords 1]
     # Destination position
     set pos $game_state(warrior)
-    if { ($PLAYER_NAME == $game_state(player_first)) || ($PLAYER_OBS == 1) } {
+    if { ("$PLAYER_NAME" == "$game_state(player_first)") || ($PLAYER_OBS == 1) } {
       set MOVE_ENDX [BOARD_Scale [expr int(583 + ($pos * 38.5))]]
     } else {
       set MOVE_ENDX [BOARD_Scale [expr int(583 + ($pos * -38.5))]]
@@ -456,6 +456,19 @@ proc BOARD_UpdateBoard {} {
 
   # Manage board elements
   if { [winfo exists .board] } {
+    # Set canvas position and zoom depending on the screen resolution
+    set sw [winfo screenwidth  .board]
+    set sh [winfo screenheight .board]
+    if { ($sh < 900) || ($sw < 1200) } {
+      if { $ZOOM_IN == $ZOOM_OUT } { BOARD_ChangeZoom }
+    } else {
+      if { $ZOOM_IN != $ZOOM_OUT } { BOARD_ChangeZoom }
+    }
+    #set x [expr int((($sw - 1200) / 2))]
+    #tk_messageBox -message "Dest: $x / [.board.c xview]" -type ok
+    #.board.c configure -xscrollincrement 1
+    #.board.c xview scroll [expr 0 - $x] units
+
     # No selection
     set CARD_INDEX    -1
     set WONDER_INDEX  -1
@@ -466,8 +479,8 @@ proc BOARD_UpdateBoard {} {
     set JETON3_INDEX  -1
 
     # Update players cards and funds
-    TOOLS_FillPlayersCards $PLAYER_NAME $PLAYER_OBS
-    TOOLS_FillPlayersFunds $PLAYER_NAME $PLAYER_OBS
+    TOOLS_FillPlayersCards "$PLAYER_NAME" $PLAYER_OBS
+    TOOLS_FillPlayersFunds "$PLAYER_NAME" $PLAYER_OBS
 
     # Load board image
     .board.c delete img_background img_board img_discard img_warrior img_malus_l0 img_malus_l1 img_malus_r0 img_malus_r1 txt_built txt_info
@@ -492,9 +505,12 @@ proc BOARD_UpdateBoard {} {
     set img_board [BOARD_ZoomImage $img_board]
     set img_background [image create photo]
     $img_background read "$SCRIPT_PATH/imgs/background.png"
-    set img_background [BOARD_ZoomImage $img_background]
-    .board.c create image 0   0 -image $img_background -tags img_background -anchor nw
-    .board.c create image 200 0 -image $img_board      -tags img_board      -anchor nw
+    #set img_background [BOARD_ZoomImage $img_background]
+    set img_bg [image create photo]
+    $img_bg copy $img_background -shrink -zoom 2 2
+    #$img_tmp2 copy $img_tmp1       -shrink -subsample $ZOOM_OUT $ZOOM_OUT
+    .board.c create image 0   0 -image $img_bg    -tags img_background -anchor nw
+    .board.c create image 200 0 -image $img_board -tags img_board      -anchor nw
 
     # Create discard area
     set img_discard [image create photo]
@@ -525,9 +541,9 @@ proc BOARD_UpdateBoard {} {
     set img_pv [image create photo]
     $img_pv read "$SCRIPT_PATH/imgs/pv.png"
     set img_pv [BOARD_ZoomImage $img_pv]
-    set pv1 [TOOLS_NbPV $game_state(player_first) ]
-    set pv2 [TOOLS_NbPV $game_state(player_second)]
-    if { ($PLAYER_NAME == $game_state(player_first)) || ($PLAYER_OBS == 1) } {
+    set pv1 [TOOLS_NbPV "$game_state(player_first)" ]
+    set pv2 [TOOLS_NbPV "$game_state(player_second)"]
+    if { ("$PLAYER_NAME" == "$game_state(player_first)") || ($PLAYER_OBS == 1) } {
       .board.c create text  160 75 -text "$game_state(player_first)" -tags txt_names -anchor w
       .board.c create image 160 15 -image $img_gold -tags img_gold_p1 -anchor nw
       .board.c create text  220 37 -text "$game_state(gold_player_first)"  -tags img_gold_t1 -anchor w
@@ -566,9 +582,9 @@ proc BOARD_UpdateBoard {} {
       if { [llength $game_state(wonders)] > $i } {
         array set wonder [lindex $game_state(wonders) $i]
         if { $wonder(owner) != "" } {
-          if { ($game_state($wonder(owner)) == $PLAYER_NAME) ||
+          if { ("$game_state($wonder(owner))" == "$PLAYER_NAME") ||
                (($PLAYER_OBS == 1) && ($wonder(owner) == "player_first")) ||
-               (($game_state(player_first) == "") && ($game_state(player_second) == "") && ($wonder(owner) == "player_first")) } {
+               (("$game_state(player_first)" == "") && ("$game_state(player_second)" == "") && ($wonder(owner) == "player_first")) } {
             set img_wonder [image create photo]
             set idx_last [TOOLS_GetLastWonder]
             if { $idx_last == $i } {
@@ -582,7 +598,7 @@ proc BOARD_UpdateBoard {} {
               .board.c create text [expr ($num_me * 149) + 75] 760 -text "CONSTRUIT" -tags txt_built -anchor n -fill "light cyan"
               .board.c itemconfigure txt_built -font "Arial 14 bold"
             }
-            if { ([GUI_IsPlaying] == 1) && ([TOOLS_IsWonderSelectable $PLAYER_NAME $i] == 1) } {
+            if { ([GUI_IsPlaying] == 1) && ([TOOLS_IsWonderSelectable "$PLAYER_NAME" $i] == 1) } {
               .board.c bind img_wonder$i <ButtonRelease-1> "ACTION_DisplayActionWonder $i"
               .board.c bind img_wonder$i <Leave> "BOARD_HighlightWonder $i 0"
               .board.c bind img_wonder$i <Enter> "BOARD_HighlightWonder $i 1"
@@ -653,9 +669,9 @@ proc BOARD_UpdateBoard {} {
             .board.c bind img_jeton$i <Leave> "BOARD_InfoJeton $i 0"
             .board.c bind img_jeton$i <Enter> "BOARD_InfoJeton $i 1"
           }
-        } elseif { ($game_state($jeton(owner)) == $PLAYER_NAME) ||
+        } elseif { ("$game_state($jeton(owner))" == "$PLAYER_NAME") ||
                    (($PLAYER_OBS == 1) && ($jeton(owner) == "player_first")) ||
-                   (($game_state(player_first) == "") && ($game_state(player_second) == "") && ($jeton(owner) == "player_first")) } {
+                   (("$game_state(player_first)" == "") && ("$game_state(player_second)" == "") && ($jeton(owner) == "player_first")) } {
           .board.c create image [expr 4 + ($num_me * 33)] 5 -image $img_jeton -tags img_jeton$i -anchor nw
           incr num_me
         } else {
@@ -677,12 +693,12 @@ proc BOARD_UpdateBoard {} {
     # Display my malus (if I play) or first player malus
     set malus_l {1 1}
     set malus_r {1 1}
-    if { $PLAYER_NAME == $game_state(player_first)  } { set malus_l $game_state(malus_player_first)  }
-    if { $PLAYER_NAME == $game_state(player_second) } { set malus_l $game_state(malus_player_second) }
-    if { $PLAYER_OBS  == 1                          } { set malus_l $game_state(malus_player_first)  }
-    if { $PLAYER_NAME == $game_state(player_first)  } { set malus_r $game_state(malus_player_second) }
-    if { $PLAYER_NAME == $game_state(player_second) } { set malus_r $game_state(malus_player_first)  }
-    if { $PLAYER_OBS  == 1                          } { set malus_r $game_state(malus_player_second) }
+    if { "$PLAYER_NAME" == "$game_state(player_first)"  } { set malus_l $game_state(malus_player_first)  }
+    if { "$PLAYER_NAME" == "$game_state(player_second)" } { set malus_l $game_state(malus_player_second) }
+    if { $PLAYER_OBS    == 1                            } { set malus_l $game_state(malus_player_first)  }
+    if { "$PLAYER_NAME" == "$game_state(player_first)"  } { set malus_r $game_state(malus_player_second) }
+    if { "$PLAYER_NAME" == "$game_state(player_second)" } { set malus_r $game_state(malus_player_first)  }
+    if { $PLAYER_OBS    == 1                            } { set malus_r $game_state(malus_player_second) }
     if { [lindex $malus_l 0] == 1 } {
       set img_malus_l0 [image create photo]
       $img_malus_l0 read "$SCRIPT_PATH/imgs/malus2.png"
@@ -713,7 +729,7 @@ proc BOARD_UpdateBoard {} {
     set img_warrior [image create photo]
     $img_warrior read "$SCRIPT_PATH/imgs/warrior.png"
     set img_warrior [BOARD_ZoomImage $img_warrior]
-    if { ($PLAYER_NAME == $game_state(player_first)) || ($PLAYER_OBS == 1) } {
+    if { ("$PLAYER_NAME" == "$game_state(player_first)") || ($PLAYER_OBS == 1) } {
       .board.c create image [expr 583 + ($pos * 38.5)] 81 -image $img_warrior -tags img_warrior -anchor nw
     } else {
       .board.c create image [expr 583 + ($pos * -38.5)] 81 -image $img_warrior -tags img_warrior -anchor nw
@@ -880,7 +896,7 @@ proc BOARD_UpdateBoard {} {
     }
 
     # Display players cards
-    TOOLS_FillPlayersCards $PLAYER_NAME $PLAYER_OBS
+    TOOLS_FillPlayersCards "$PLAYER_NAME" $PLAYER_OBS
     set nb_cards_by_colomn 15
     set num 0
     foreach tcard $CARDS_P1 {
@@ -892,7 +908,7 @@ proc BOARD_UpdateBoard {} {
                             [expr (($num % $nb_cards_by_colomn) * 35) + 100] \
                      -image $img_card -tags img_cards_p1_$num -anchor nw
       # Must select the card (obs)
-      if { $game_state(action_card) == $card(name) } {
+      if { "$game_state(action_card)" == "$card(name)" } {
         set coords [.board.c coords img_cards_p1_$num]
         set x1 [expr [lindex $coords 0] + 2]
         set y1 [expr [lindex $coords 1] + 2]
@@ -902,7 +918,7 @@ proc BOARD_UpdateBoard {} {
         } else {
           set y2 [expr 35  + $y1 - 4]
         }
-        TOOLS_FillPlayersCards $PLAYER_NAME $PLAYER_OBS
+        TOOLS_FillPlayersCards "$PLAYER_NAME" $PLAYER_OBS
         .board.c create rectangle $x1 $y1 $x2 $y2 -outline "purple3" -width 4 -tags img_actions
       }
       incr num
@@ -916,11 +932,11 @@ proc BOARD_UpdateBoard {} {
       .board.c create image [expr 1100 - (($num / $nb_cards_by_colomn) * 100)] \
                             [expr (($num % $nb_cards_by_colomn) * 35) + 100] \
                      -image $img_card -tags img_cards_p2_$num -anchor nw
-      if { ([GUI_IsPlaying] == 1) && ([TOOLS_IsBrownCardSelectable $PLAYER_NAME $num] == 1) } {
+      if { ([GUI_IsPlaying] == 1) && ([TOOLS_IsBrownCardSelectable "$PLAYER_NAME" $num] == 1) } {
         .board.c bind img_cards_p2_$num <ButtonRelease-1> "ACTION_BuildWonderAndDiscard 3 $num"
         .board.c bind img_cards_p2_$num <Leave> "BOARD_HighlightBrownCard $num 0"
         .board.c bind img_cards_p2_$num <Enter> "BOARD_HighlightBrownCard $num 1"
-      } elseif { ([GUI_IsPlaying] == 1) && ([TOOLS_IsGrayCardSelectable $PLAYER_NAME $num] == 1) } {
+      } elseif { ([GUI_IsPlaying] == 1) && ([TOOLS_IsGrayCardSelectable "$PLAYER_NAME" $num] == 1) } {
         .board.c bind img_cards_p2_$num <ButtonRelease-1> "ACTION_BuildWonderAndDiscard 4 $num"
         .board.c bind img_cards_p2_$num <Leave> "BOARD_HighlightGrayCard $num 0"
         .board.c bind img_cards_p2_$num <Enter> "BOARD_HighlightGrayCard $num 1"
@@ -928,9 +944,9 @@ proc BOARD_UpdateBoard {} {
         .board.c bind img_cards_p2_$num <ButtonRelease-1> ""
         .board.c bind img_cards_p2_$num <Enter> ""
       }
-      TOOLS_FillPlayersCards $PLAYER_NAME $PLAYER_OBS
+      TOOLS_FillPlayersCards "$PLAYER_NAME" $PLAYER_OBS
       # Must select the card
-      if { $game_state(action_card) == $card(name) } {
+      if { "$game_state(action_card)" == "$card(name)" } {
         set coords [.board.c coords img_cards_p2_$num]
         set x1 [expr [lindex $coords 0] + 2]
         set y1 [expr [lindex $coords 1] + 2]
@@ -940,7 +956,7 @@ proc BOARD_UpdateBoard {} {
         } else {
           set y2 [expr 35  + $y1 - 4]
         }
-        TOOLS_FillPlayersCards $PLAYER_NAME $PLAYER_OBS
+        TOOLS_FillPlayersCards "$PLAYER_NAME" $PLAYER_OBS
         .board.c create rectangle $x1 $y1 $x2 $y2 -outline "purple3" -width 4 -tags img_actions
       }
       incr num
@@ -1017,7 +1033,7 @@ proc BOARD_ManageSelection {} {
     }
     if { ($WONDER_INDEX >= 0) && ($MODE_SEL == 1) } {
       # Determine if a wonder is buyable
-      if { ([.board.c gettags img_wonder$WONDER_INDEX] != "") && ([TOOLS_IsWonderSelectable $PLAYER_NAME $WONDER_INDEX] == 1) } {
+      if { ([.board.c gettags img_wonder$WONDER_INDEX] != "") && ([TOOLS_IsWonderSelectable "$PLAYER_NAME" $WONDER_INDEX] == 1) } {
         set coords [.board.c coords img_wonder$WONDER_INDEX]
         set x1 [lindex $coords 0]
         set y1 [lindex $coords 1]
@@ -1039,7 +1055,7 @@ proc BOARD_ManageSelection {} {
     }
     if { ($BROWN_INDEX >= 0) && ($MODE_SEL == 3) } {
       # Determine if a brown card can be discard
-      if { ([.board.c gettags img_cards_p2_$BROWN_INDEX] != "") && ([TOOLS_IsBrownCardSelectable $PLAYER_NAME $BROWN_INDEX] == 1) } {
+      if { ([.board.c gettags img_cards_p2_$BROWN_INDEX] != "") && ([TOOLS_IsBrownCardSelectable "$PLAYER_NAME" $BROWN_INDEX] == 1) } {
         set coords [.board.c coords img_cards_p2_$BROWN_INDEX]
         set x1 [lindex $coords 0]
         set y1 [lindex $coords 1]
@@ -1054,7 +1070,7 @@ proc BOARD_ManageSelection {} {
     }
     if { ($GRAY_INDEX >= 0) && ($MODE_SEL == 4) } {
       # Determine if a gray card can be discard
-      if { ([.board.c gettags img_cards_p2_$GRAY_INDEX] != "") && ([TOOLS_IsGrayCardSelectable $PLAYER_NAME $GRAY_INDEX] == 1) } {
+      if { ([.board.c gettags img_cards_p2_$GRAY_INDEX] != "") && ([TOOLS_IsGrayCardSelectable "$PLAYER_NAME" $GRAY_INDEX] == 1) } {
         set coords [.board.c coords img_cards_p2_$GRAY_INDEX]
         set x1 [lindex $coords 0]
         set y1 [lindex $coords 1]
@@ -1198,17 +1214,17 @@ proc BOARD_ManageInfoMessage {} {
     }
   } else {
     if { $game_state(player_turn) >= 0 } {
-      if  { ($game_state(play) != "") && ($game_state($game_state(play)) != "") } {
+      if  { ($game_state(play) != "") && ("$game_state($game_state(play))" != "") } {
         if { $PLAYER_OBS == 1 } {
-          GUI_ShowInfo "C'est a $game_state($game_state(play)) de jouer" "black"
+          GUI_ShowInfo "C'est à $game_state($game_state(play)) de jouer" "black"
         } else {
           GUI_ShowInfo "Attente que le joueur $game_state($game_state(play)) finisse son tour de jeu..." "DarkRed"
         }
       } else {
         if { $game_state(newround) != "" } {
           if { $PLAYER_OBS == 1 } {
-            GUI_ShowInfo "C'est a $game_state($game_state(newround)) de choisir qui va commencer le nouveau round" "black"
-          } elseif { [TOOLS_IsNewRound $PLAYER_NAME] == 0 } {
+            GUI_ShowInfo "C'est à $game_state($game_state(newround)) de choisir qui va commencer le nouveau round" "black"
+          } elseif { [TOOLS_IsNewRound "$PLAYER_NAME"] == 0 } {
             GUI_ShowInfo "Attente que le joueur $game_state($game_state(newround)) choisisse qui commence le nouveau round" "DarkRed"
           } else {
             GUI_ShowInfo "[lindex $INFO_BAR([expr $INFO_SEL / 4]) 0] CHOISISSEZ LE JOUEUR QUI VA COMMENCER LE PROCHAIN ROUND [lindex $INFO_BAR([expr $INFO_SEL / 4]) 1]" "DarkBlue"

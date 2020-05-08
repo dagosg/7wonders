@@ -43,18 +43,17 @@ proc CHAT_DisplayChat {} {
       TOOLS_SetShortcuts .board.chat
       update
       foreach player $game_state(player_list) {
-        if { [lindex $player 0] != $PLAYER_NAME } {
-          CHAT_DisplayMessage "[lindex $player 0] est connecte" "black"
+        if { "[lindex $player 0]" != "$PLAYER_NAME" } {
+          CHAT_DisplayMessage "[lindex $player 0] est connecté" "black"
         }
       }
-      catch { puts $tcp_socket "SendChatMessage {Je suis connecte}" }
+      catch { puts $tcp_socket "SendChatMessage {Je suis connecté}" }
       CHAT_DisplayMessage "Commandes du jeu:"                     "slate blue"
       CHAT_DisplayMessage "F2 - Sauvegarder la partie"            "slate blue"
       CHAT_DisplayMessage "F3 - Recharger la partie"              "slate blue"
-      CHAT_DisplayMessage "F5 - Raffraichir (bug/deconnexion)"    "slate blue"
-      CHAT_DisplayMessage "F6 - Coup precedent"                   "slate blue"
+      CHAT_DisplayMessage "F5 - Raffraîchir (bug/déconnexion)"    "slate blue"
+      CHAT_DisplayMessage "F6 - Coup précédent"                   "slate blue"
       CHAT_DisplayMessage "F7 - Coup suivant"                     "slate blue"
-      CHAT_DisplayMessage "F8 - Inversion du zoom"                "slate blue"
       CHAT_DisplayMessage "F10 - Nouvelle partie"                 "slate blue"
       CHAT_DisplayMessage "F12 - Tuer le server (blocage)"        "slate blue"
     }
@@ -93,7 +92,7 @@ proc CHAT_IsTyping {name} {
   # Create tag if none
   if { $TTAG == -1 } {
     # First tag
-    set TTAG [CHAT_DisplayMessage "$name est en train d'ecrire" "black" 0]
+    set TTAG [CHAT_DisplayMessage "$name est en train d'écrire" "black" 0]
   }
 
   # Append people typing
@@ -131,9 +130,9 @@ proc CHAT_UpdateTypingInfo {} {
         set names "$names, [lindex $TYPING $i]"
       }
       if { $loop > 0 } {
-        set names "$names et [lindex $TYPING $loop] sont en train d'ecrire..."
+        set names "$names et [lindex $TYPING $loop] sont en train d'écrire..."
       } else {
-        set names "$names est en train d'ecrire..."
+        set names "$names est en train d'écrire..."
       }
       set TTAG [CHAT_DisplayMessage "$names" "black" 0]
     }
@@ -205,7 +204,7 @@ proc CHAT_SendChatMessage {} {
 
   set message "[string trim [$chat_message get 1.0 end]]"
   $chat_message delete 1.0 end
-  if { $message != "" } {
+  if { "$message" != "" } {
     set message [string map {"\r" ""} $message]
     set lines [split $message "\n"]
     foreach line $lines {

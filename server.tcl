@@ -3,7 +3,7 @@ set SCRIPT_PATH [file dirname [file normalize [info script]]]
 
 # Server version
 set SERVER_VERSION_MAJOR "2"
-set SERVER_VERSION_MINOR "1"
+set SERVER_VERSION_MINOR "2"
 
 # Load TLS library
 source $SCRIPT_PATH/tls/tls.tcl

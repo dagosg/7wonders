@@ -45,7 +45,7 @@ proc ConnectServer {} {
   if { [ catch {
     set tcp_socket [::tls::socket $TCP_HOST $TCP_PORT]
   } err ] } {
-    GUI_Dialog "Erreur de connexion" "Erreur de connexion a $TCP_HOST sur le port $TCP_PORT:\n$err" ".connexion"
+    GUI_Dialog "Erreur de connexion" "Erreur de connexion à $TCP_HOST sur le port $TCP_PORT:\n$err" ".connexion"
     return "KO"
   }
 

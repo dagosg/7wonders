@@ -20,7 +20,7 @@ proc WONDERS_DisplayWonders {} {
     wm withdraw .board.wonders
     update
     if { [winfo exists .board.wonders] } {
-      wm title .board.wonders "7 Wonders Duel - Selection des merveilles"
+      wm title .board.wonders "7 Wonders Duel - Sélection des merveilles"
       wm transient .board.wonders .
       wm deiconify .board.wonders
       grid .board.wonders.f0 .board.wonders.f1 -sticky nsew

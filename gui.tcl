@@ -84,10 +84,10 @@ proc GUI_ManageButtonState {} {
   .connexion.fc.f2.t1 delete 2.0 end
   .connexion.fc.f2.t2 delete 2.0 end
   .connexion.fp.f2.t1 delete 2.0 end
-  set TCP_HOST    [string trim [.connexion.fc.f2.t1 get 1.0 end]]
-  set TCP_PORT    [string trim [.connexion.fc.f2.t2 get 1.0 end]]
-  set PLAYER_NAME [string trim [.connexion.fp.f2.t1 get 1.0 end]]
-  if { ($TCP_HOST == "") || ($TCP_PORT == "") || ($PLAYER_NAME == "") } {
+  set TCP_HOST    "[string trim [.connexion.fc.f2.t1 get 1.0 end]]"
+  set TCP_PORT    "[string trim [.connexion.fc.f2.t2 get 1.0 end]]"
+  set PLAYER_NAME "[string trim [.connexion.fp.f2.t1 get 1.0 end]]"
+  if { ("$TCP_HOST" == "") || ("$TCP_PORT" == "") || ("$PLAYER_NAME" == "") } {
     .connexion.ok configure -state disabled
   } else {
     .connexion.ok configure -state normal -default active

@@ -7,7 +7,6 @@ proc TOOLS_SetShortcuts {window} {
   bind $window <KeyPress-F5>  "BOARD_RefreshGame"
   bind $window <KeyPress-F6>  "BOARD_PlayBack"
   bind $window <KeyPress-F7>  "BOARD_PlayNext"
-  bind $window <KeyPress-F8>  "BOARD_ChangeZoom"
   bind $window <KeyPress-F10> "BOARD_New $window"
   bind $window <KeyPress-F12> "BOARD_KillServer"
 }
@@ -21,7 +20,7 @@ proc GUI_IsPlaying {} {
   if { $game_state(play) == "" } { return 0 }
   if { $game_state(round) > 3  } { return 0 }
   if { $PLAYER_OBS == 1 } { return 0 }
-  if { $game_state($game_state(play)) == $PLAYER_NAME } { return 1 }
+  if { "$game_state($game_state(play))" == "$PLAYER_NAME" } { return 1 }
   return 0
 }
 
@@ -32,12 +31,12 @@ proc TOOLS_IsLastCard {index {play ""}} {
   variable CARDS_P2
 
   if { $play == "" } {
-    set name $PLAYER_NAME
+    set name "$PLAYER_NAME"
   } else {
-    if { $play == "player_first"  } { set name $game_state(player_second) }
-    if { $play == "player_second" } { set name $game_state(player_first)  }
+    if { $play == "player_first"  } { set name "$game_state(player_second)" }
+    if { $play == "player_second" } { set name "$game_state(player_first)"  }
   }
-  TOOLS_FillPlayersCards $name 0
+  TOOLS_FillPlayersCards "$name" 0
   if { [expr $index + 1] == [llength $CARDS_P2] } { return 1 }
   if { [expr $index % 15] == 14 } { return 1 }
   return 0
@@ -138,7 +137,7 @@ proc TOOLS_IsWonderSelectable {name index} {
   variable game_state
 
   array set wonder [lindex $game_state(wonders) $index]
-  if { ($wonder(built) == 0) && ($game_state($wonder(owner)) == $name) } {
+  if { ($wonder(built) == 0) && ("$game_state($wonder(owner))" == "$name") } {
     if { [TOOLS_GetLastWonder] == -1 } {
       return 1
     }
@@ -161,7 +160,7 @@ proc TOOLS_IsBrownCardSelectable {name index} {
   variable CARDS_P2
 
   if { $index < 0 } { return 0 }
-  TOOLS_FillPlayersCards $name 0
+  TOOLS_FillPlayersCards "$name" 0
   array set card [lindex $CARDS_P2 $index]
   if { $card(color) == "brown" } { return 1 }
   return 0
@@ -172,7 +171,7 @@ proc TOOLS_IsGrayCardSelectable {name index} {
   variable CARDS_P2
 
   if { $index < 0 } { return 0 }
-  TOOLS_FillPlayersCards $name 0
+  TOOLS_FillPlayersCards "$name" 0
   array set card [lindex $CARDS_P2 $index]
   if { $card(color) == "gray" } { return 1 }
   return 0
@@ -205,7 +204,7 @@ proc TOOLS_GetPrice {name obs price {joker 0}} {
   if { $obs == 1 } { return 0 }
 
   # Get players funds
-  TOOLS_FillPlayersFunds $name $obs
+  TOOLS_FillPlayersFunds "$name" $obs
 
   # Compute card cost at market
   set cost(0) [expr 2 + [lindex $FUNDS_P2 0]]
@@ -294,7 +293,7 @@ proc TOOLS_GetCardPrice {index name obs} {
 
   # Get player
   set play "player_first"
-  if { $name == $game_state(player_second) } { set play "player_second" }
+  if { "$name" == "$game_state(player_second)" } { set play "player_second" }
 
   # Get card details
   set j $game_state(round)
@@ -303,7 +302,7 @@ proc TOOLS_GetCardPrice {index name obs} {
   # Look if we have a chain (free)
   set chain [lindex $card(chain) 1]
   if { $chain > 0 } {
-    TOOLS_FillPlayersCards $name $obs
+    TOOLS_FillPlayersCards "$name" $obs
     foreach tcard_p1 $CARDS_P1 {
       array set card_p1 $tcard_p1
       if { [lindex $card_p1(chain) 0] == $chain } { return -1 }
@@ -311,10 +310,10 @@ proc TOOLS_GetCardPrice {index name obs} {
   }
 
   # Get card price
-  if { ([TOOLS_IsJetonBought "MACONNERIE" $name $obs]) && ($card(color) == "blue") } {
-    set price [TOOLS_GetPrice $name $obs $card(price) 2]
+  if { ([TOOLS_IsJetonBought "MACONNERIE" "$name" $obs]) && ($card(color) == "blue") } {
+    set price [TOOLS_GetPrice "$name" $obs $card(price) 2]
   } else {
-    set price [TOOLS_GetPrice $name $obs $card(price)]
+    set price [TOOLS_GetPrice "$name" $obs $card(price)]
   }
   return $price
 }
@@ -328,16 +327,16 @@ proc TOOLS_GetWonderPrice {index name obs} {
 
   # Get player
   set play "player_first"
-  if { $name == $game_state(player_second) } { set play "player_second" }
+  if { "$name" == "$game_state(player_second)" } { set play "player_second" }
 
   # Get wonder details
   array set wonder [lindex $game_state(wonders) $index]
 
   # Get wonder price
-  if { [TOOLS_IsJetonBought "ARCHITECTURE" $name $obs] } {
-    set price [TOOLS_GetPrice $name $obs $wonder(price) 2]
+  if { [TOOLS_IsJetonBought "ARCHITECTURE" "$name" $obs] } {
+    set price [TOOLS_GetPrice "$name" $obs $wonder(price) 2]
   } else {
-    set price [TOOLS_GetPrice $name $obs $wonder(price)]
+    set price [TOOLS_GetPrice "$name" $obs $wonder(price)]
   }
   return $price
 }
@@ -352,7 +351,7 @@ proc TOOLS_ReplaceCard {new_card} {
     for { set i 0 } { $i < 20 } { incr i } {
       if { [llength $game_state(cards$j)] > $i } {
         array set card [lindex $game_state(cards$j) $i]
-        if { $card(name) == $ncard(name) } {
+        if { "$card(name)" == "$ncard(name)" } {
           set game_state(cards$j) [lreplace $game_state(cards$j) $i $i $new_card]
         }
       }
@@ -374,9 +373,9 @@ proc TOOLS_FillPlayersCards {name obs} {
       if { [llength $game_state(cards$j)] > $i } {
         array set card [lindex $game_state(cards$j) $i]
         if { ($card(owner) != "") && ($card(owner) != "discard") && ($card(owner) != "wonder") } {
-          if { ($game_state($card(owner)) == $name) ||
+          if { ("$game_state($card(owner))" == "$name") ||
                (($obs == 1) && ($card(owner) == "player_first")) ||
-               (($game_state(player_first) == "") && ($game_state(player_second) == "") && ($card(owner) == "player_first")) } {
+               (("$game_state(player_first)" == "") && ("$game_state(player_second)" == "") && ($card(owner) == "player_first")) } {
             lappend cards_player1 [array get card]
           } else {
             lappend cards_player2 [array get card]
@@ -425,7 +424,7 @@ proc TOOLS_FillPlayersFunds {name obs} {
       if { [llength $game_state(cards$j)] > $i } {
         array set card [lindex $game_state(cards$j) $i]
         if { ($card(owner) != "") && ($card(owner) != "discard") && ($card(owner) != "wonder") } {
-          if { $game_state($card(owner)) == $name } {
+          if { "$game_state($card(owner))" == "$name" } {
             set FUNDS_P1 [lreplace $FUNDS_P1 0  0  [expr [lindex $FUNDS_P1 0 ] + [lindex $card(funds) 0]]]
             set FUNDS_P1 [lreplace $FUNDS_P1 1  1  [expr [lindex $FUNDS_P1 1 ] + [lindex $card(funds) 1]]]
             set FUNDS_P1 [lreplace $FUNDS_P1 2  2  [expr [lindex $FUNDS_P1 2 ] + [lindex $card(funds) 2]]]
@@ -460,7 +459,7 @@ proc TOOLS_FillPlayersFunds {name obs} {
     if { [llength $game_state(wonders)] > $i } {
       array set wonder [lindex $game_state(wonders) $i]
       if { $wonder(built) == 1 } {
-        if { $game_state($wonder(owner)) == $name } {
+        if { "$game_state($wonder(owner))" == "$name" } {
           # Add bonus for player 1
           set FUNDS_P1 [lreplace $FUNDS_P1 5 5 [expr [lindex $FUNDS_P1 5 ] + [lindex $wonder(trade) 0]]]
           set FUNDS_P1 [lreplace $FUNDS_P1 6 6 [expr [lindex $FUNDS_P1 6 ] + [lindex $wonder(trade) 1]]]
@@ -496,10 +495,10 @@ proc TOOLS_CanTakeJeton { card_lvl card_index name obs } {
 
   # Get player
   set play "player_first"
-  if { $name == $game_state(player_second) } { set play "player_second" }
+  if { "$name" == "$game_state(player_second)" } { set play "player_second" }
 
   # Check if another green card is in the deck
-  TOOLS_FillPlayersCards $name $obs
+  TOOLS_FillPlayersCards "$name" $obs
   foreach tcard_p1 $CARDS_P1 {
     array set card_p1 $tcard_p1
     if { $card_p1(green) == $card(green) } { return 1 }
@@ -520,7 +519,7 @@ proc TOOLS_GetWonderAction { wonder_index name obs } {
   if { $obs == 1 } { return 0 }
 
   # Get wonder details
-  TOOLS_FillPlayersCards $name $obs
+  TOOLS_FillPlayersCards "$name" $obs
   array set wonder [lindex $game_state(wonders) $wonder_index]
 
   # Brown
@@ -586,12 +585,12 @@ proc TOOLS_IsJetonBought {jeton_name name obs} {
 
   # Get player
   set play "player_first"
-  if { $name == $game_state(player_second) } { set play "player_second" }
+  if { "$name" == "$game_state(player_second)" } { set play "player_second" }
 
   # Search jeton
   foreach jeton_t $game_state(jetons) {
     array set jeton $jeton_t
-    if { ($jeton(owner) == $play) && ($jeton(name) == $jeton_name) } {
+    if { ($jeton(owner) == $play) && ("$jeton(name)" == "$jeton_name") } {
       return 1
     }
   }
@@ -605,7 +604,7 @@ proc TOOLS_IsNewRound {name} {
   if { $game_state(newround) == "" } { return 0 }
   if { ($game_state(player_turn) != 29) && ($game_state(player_turn) != 49) } { return 0 }
   if { $game_state(round) > 3 } { return 0 }
-  if { $game_state($game_state(newround)) == $name } { return 1 }
+  if { "$game_state($game_state(newround))" == "$name" } { return 1 }
   return 0
 }
 
@@ -613,16 +612,16 @@ proc TOOLS_IsNewRound {name} {
 proc TOOLS_NbWonderBuilt {name} {
   variable game_state
 
-  if { $name == "ALL" } {
-    set p1 [TOOLS_NbWonderBuilt $game_state(player_first)]
-    set p2 [TOOLS_NbWonderBuilt $game_state(player_second)]
+  if { "$name" == "ALL" } {
+    set p1 [TOOLS_NbWonderBuilt "$game_state(player_first)" ]
+    set p2 [TOOLS_NbWonderBuilt "$game_state(player_second)"]
     if { $p1 > $p2 } { return $p1 }
     return $p2
   }
 
   # Get player
   set play "player_first"
-  if { $name == $game_state(player_second) } { set play "player_second" }
+  if { "$name" == "$game_state(player_second)" } { set play "player_second" }
 
   # Count them
   set nb 0
@@ -641,19 +640,19 @@ proc TOOLS_NbCardsByColor {color name} {
   variable CARDS_P1
   variable game_state
 
-  if { $name == "ALL" } {
-    set p1 [TOOLS_NbCardsByColor $color $game_state(player_first)]
-    set p2 [TOOLS_NbCardsByColor $color $game_state(player_second)]
+  if { "$name" == "ALL" } {
+    set p1 [TOOLS_NbCardsByColor $color "$game_state(player_first)" ]
+    set p2 [TOOLS_NbCardsByColor $color "$game_state(player_second)"]
     if { $p1 > $p2 } { return $p1 }
     return $p2
   }
 
   # Get player
   set play "player_first"
-  if { $name == $game_state(player_second) } { set play "player_second" }
+  if { "$name" == "$game_state(player_second)" } { set play "player_second" }
 
   # Count cards
-  TOOLS_FillPlayersCards $name 0
+  TOOLS_FillPlayersCards "$name" 0
   set nb 0
   foreach tcard_p1 $CARDS_P1 {
     array set card_p1 $tcard_p1
@@ -671,16 +670,16 @@ proc TOOLS_NbCardsByColor {color name} {
 proc TOOLS_NbGoldBonus {name} {
   variable game_state
 
-  if { $name == "ALL" } {
-    set p1 [TOOLS_NbGoldBonus $game_state(player_first)]
-    set p2 [TOOLS_NbGoldBonus $game_state(player_second)]
+  if { "$name" == "ALL" } {
+    set p1 [TOOLS_NbGoldBonus "$game_state(player_first)" ]
+    set p2 [TOOLS_NbGoldBonus "$game_state(player_second)"]
     if { $p1 > $p2 } { return $p1 }
     return $p2
   }
 
   # Get player
   set play "player_first"
-  if { $name == $game_state(player_second) } { set play "player_second" }
+  if { "$name" == "$game_state(player_second)" } { set play "player_second" }
 
   # Count gold
   return [expr $game_state(gold_$play) / 3]
@@ -693,10 +692,10 @@ proc TOOLS_NbPVByColor {color name} {
 
   # Get player
   set play "player_first"
-  if { $name == $game_state(player_second) } { set play "player_second" }
+  if { "$name" == "$game_state(player_second)" } { set play "player_second" }
 
   # Count cards
-  TOOLS_FillPlayersCards $name 0
+  TOOLS_FillPlayersCards "$name" 0
   set nb 0
   foreach tcard_p1 $CARDS_P1 {
     array set card_p1 $tcard_p1
@@ -731,7 +730,7 @@ proc TOOLS_NbPVWonderBuilt {name} {
 
   # Get player
   set play "player_first"
-  if { $name == $game_state(player_second) } { set play "player_second" }
+  if { "$name" == "$game_state(player_second)" } { set play "player_second" }
 
   # Count them
   set nb 0
@@ -751,7 +750,7 @@ proc TOOLS_NbPVJetons {name} {
 
   # Get player
   set play "player_first"
-  if { $name == $game_state(player_second) } { set play "player_second" }
+  if { "$name" == "$game_state(player_second)" } { set play "player_second" }
 
   # Count them
   set nb 0
@@ -778,7 +777,7 @@ proc TOOLS_NbWarBonus {name} {
 
   # Get player
   set play "player_first"
-  if { $name == $game_state(player_second) } { set play "player_second" }
+  if { "$name" == "$game_state(player_second)" } { set play "player_second" }
 
   if { $play == "player_first" } {
     if { ($game_state(warrior) >= 1) && ($game_state(warrior) <= 2) } {
@@ -805,16 +804,16 @@ proc TOOLS_NbPV {name} {
   variable game_state
 
   # Count
-  if { ($game_state(player_first)  == "") &&
-       ($game_state(player_second) == "") } { return 0 }
-  set pv [expr [TOOLS_NbPVByColor "blue"   $name] + \
-               [TOOLS_NbPVByColor "green"  $name] + \
-               [TOOLS_NbPVByColor "yellow" $name] + \
-               [TOOLS_NbPVByColor "purple" $name] + \
-               [TOOLS_NbPVWonderBuilt      $name] + \
-               [TOOLS_NbPVJetons           $name] + \
-               [TOOLS_NbGoldBonus          $name] + \
-               [TOOLS_NbWarBonus           $name] ]
+  if { ("$game_state(player_first)"  == "") &&
+       ("$game_state(player_second)" == "") } { return 0 }
+  set pv [expr [TOOLS_NbPVByColor "blue"   "$name"] + \
+               [TOOLS_NbPVByColor "green"  "$name"] + \
+               [TOOLS_NbPVByColor "yellow" "$name"] + \
+               [TOOLS_NbPVByColor "purple" "$name"] + \
+               [TOOLS_NbPVWonderBuilt      "$name"] + \
+               [TOOLS_NbPVJetons           "$name"] + \
+               [TOOLS_NbGoldBonus          "$name"] + \
+               [TOOLS_NbWarBonus           "$name"] ]
   return $pv
 }
 
